@@ -1,10 +1,32 @@
-# Bs_in_aphids
+<img width="468" height="14" alt="image" src="https://github.com/user-attachments/assets/b34b96f8-b221-4e18-a26a-6a63ad025500" /># Bs_in_aphids
 Pipeline for identifying supernumerary B chromosomes in sumac gall aphids
 
 
 ## 1 - Improving the assembly of Bs
 ### 1.1 - Extracting B-derived reads
-To simplify the B chromsome assembly process, we first identified autosomes and Xs based on sequencing homology
+To simplify the B chromosome assembly process, we first identified autosomes and Xs based on sequencing homology.
+
+#### 1.1.1 - Identify autosomes and Xs based on the genome of *Schlechtendalia chinensis*
+We first aligned hifiasm results to the top 13 scaffolds (chromosomes) of *Schlechtendalia chinensis* using LAST. Then we picked the top scaffolds that matched the chromosomes of *Schlechtendalia chinensis*
+```
+conda activate /share/home/liyiyuan/miniconda3/envs/mamba/envs/last_v1648
+
+# ref: https://github.com/aaannaw/Myospalax-CFi/blob/main/CFi_identification/Ancestral_karyotype_reconstruction.sh
+# ref: https://gitlab.com/mcfrith/last/-/blob/1648/doc/last-cookbook.rst
+
+# human and chimp example
+#lastdb -P10 -c -U400 -uRY128 ref_db ref.fa
+#last-train -P10 --revsym -C2 ref_db q.fa > hc.train
+#lastal -P10 -D1e9 -C2 --split-f=MAF+ -p hc.train ref_db q.fa | last-split -r | maf-linked - > aln.maf
+
+# Aligning more distantly related genomes
+lastdb -P10 -c ref_db ref.fa
+last-train -P10 --revsym -C2 ref_db q.fa > hl.train
+lastal -P10 -m2 -D1e9 -C2 --split-f=MAF+ -p hl.train ref_db q.fa | last-split -r | maf-linked - > aln.maf
+
+conda activate last_v1542
+last-dotplot aln.maf aln.maf.png --rot1=v --rot2=h
+```
 
 Use SAMtools to keep reads that did not align to autosomes and Xs
 ```
