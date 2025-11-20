@@ -6,7 +6,7 @@ Pipeline for identifying supernumerary B chromosomes in sumac gall aphids
 ### 1.1 - Extracting B-derived reads
 To simplify the B chromosome assembly process, we first identified autosomes and Xs based on sequencing homology.
 
-#### 1.1.1 - Identify autosomes and Xs based on the genome of *Schlechtendalia chinensis*
+#### Identify autosomes and Xs based on the genome of *Schlechtendalia chinensis*
 We first aligned hifiasm results to the top 13 scaffolds (chromosomes) of *Schlechtendalia chinensis* using LAST. Then we picked the top scaffolds that matched the chromosomes of *Schlechtendalia chinensis*
 ```
 conda activate last_v1648
