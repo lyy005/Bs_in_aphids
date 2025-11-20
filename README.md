@@ -28,11 +28,27 @@ conda activate last_v1542
 last-dotplot aln.maf aln.maf.png --rot1=v --rot2=h
 ```
 
-Use SAMtools to keep reads that did not align to autosomes and Xs
+#### Map HiFi reads to hifiasm scaffolds
 ```
-samtools view -bS genome.sorted.bam -o B_reads.bam s5h1_14F s5h1_15F s5h1_16F s5h1_17F s5h1_18F s5h1_19F s5h1_20F s5h1_21F s5h1_22F s5h1_23F s5h1_24F s5h1_25F s5h1_26F s5h1_27F s5h1_28F s5h1_29F s5h1_30F s5h1_31F s5h1_32F s5h1_33F s5h1_34F s5h1_35F s5h1_36F s5h1_37F s5h1_38F s5h1_39F s5h1_40F s5h1_41F s5h1_42F s5h1_43F s5h1_44F s5h1_45F s5h1_46F s5h1_47F s5h1_48F s5h1_49F s5h1_50F s5h1_51F s5h1_52F s5h1_53F s5h1_54F s5h1_55F s5h1_56F s5h1_57F s5h1_58F s5h1_59F s5h1_60F s5h1_61F s5h1_62F s5h1_63F s5h1_64F s5h1_65F s5h1_66F s5h1_67F s5h1_68F s5h1_69F s5h1_70F s5h1_71F s5h1_72F s5h1_73F s5h1_74F s5h1_75F s5h1_76F s5h1_77F s5h1_78F s5h1_79F s5h1_80F s5h1_81F s5h1_82F s5h1_83F s5h2_14F s5h2_15F s5h2_16F s5h2_17F s5h2_18F s5h2_19F s5h2_20F s5h2_21F s5h2_22F s5h2_23F s5h2_24F s5h2_25F s5h2_26F s5h2_27F s5h2_28F s5h2_29F s5h2_30F s5h2_31F s5h2_32F s5h2_33F s5h2_34F s5h2_35F s5h2_36F s5h2_37F s5h2_38F s5h2_39F s5h2_40F s5h2_41F s5h2_42F s5h2_43F s5h2_44F s5h2_45F s5h2_46F s5h2_47F s5h2_48F s5h2_49F s5h2_50F s5h2_51F s5h2_52F s5h2_53F s5h2_54F s5h2_55F s5h2_56F --threads 20
+conda activate samtools_v1.21
+
+# cat h1.rescaf.fa h2.rescaf.fa > genome.fa
+/share/home/liyiyuan/bin/minimap2/minimap2-2.28_x64-linux/minimap2 -a genome.fa -o genome.sam -t 20 -x map-hifi hifi.filt.fastq.gz
+samtools view -h -b -S genome.sam -o genome.bam --threads 20
+samtools sort genome.bam -o genome.sorted.bam --threads 20
+samtools index genome.sorted.bam
 ```
 
+Use SAMtools to keep reads that did not align to autosomes and Xs
+```
+conda activate samtools_v1.21
+
+samtools view -bS genome.sorted.bam -o B_reads.bam h1tg000021l h1tg000001l h1tg000010l h2tg000015l h1tg000013l h2tg000025l h1tg000026l h2tg000008l h1tg000015l h1tg000017l h2tg000017l h1tg000022l h1tg000030l h1tg000003l h1tg000023l h1tg000027l h1tg000024l h1tg000028l h1tg000042l h1tg000048l h1tg000029l h1tg000054l h1tg000039l h1tg000034l h1tg000055l h1tg000059l h1tg000056l h1tg000060l h1tg000076l h1tg000071l h1tg000065l h1tg000050l h1tg000049l h1tg000057l h1tg000025l h1tg000041l h1tg000052l h1tg000036l h1tg000078l h1tg000043l h1tg000031l h1tg000074l h1tg000067l h1tg000037l h1tg000072l h1tg000062l h1tg000044l h1tg000068l h1tg000069l h1tg000051l h1tg000064l h1tg000035l h1tg000075l h1tg000033l h1tg000073l h1tg000077l h1tg000061l h1tg000045l h1tg000040l h1tg000038l h1tg000063l h1tg000070l h1tg000053l h1tg000046l h1tg000066l h1tg000047l h1tg000058l h1tg000032l h2tg000020l h2tg000024l h2tg000023l h2tg000027l h2tg000030l h2tg000022l h2tg000032l h2tg000018l h2tg000031l h2tg000036l h2tg000029l h2tg000034l h2tg000035l h2tg000039l h2tg000042l h2tg000037l h2tg000033l h2tg000028l h2tg000040l h2tg000045l h2tg000046l h2tg000021l h2tg000044l h2tg000026l h2tg000043l h2tg000041l h2tg000038l --threads 20
+
+samtools fastq B_reads.bam | gzip B_reads.fastq.gz
+```
+
+#### Assemble B-derived reads using Verkko
 ```
 conda activate verkko_v2.2.1
 verkko -d run1_asm --hifi hifi.filt.fastq.gz --telomere-motif CCTAA
