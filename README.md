@@ -29,11 +29,12 @@ last-dotplot aln.maf aln.maf.png --rot1=v --rot2=h
 ```
 
 #### Map HiFi reads to hifiasm scaffolds
+Using samtools version 1.21 and minimap2 version 2.28
 ```
 conda activate samtools_v1.21
 
 # cat h1.rescaf.fa h2.rescaf.fa > genome.fa
-/share/home/liyiyuan/bin/minimap2/minimap2-2.28_x64-linux/minimap2 -a genome.fa -o genome.sam -t 20 -x map-hifi hifi.filt.fastq.gz
+minimap2 -a genome.fa -o genome.sam -t 20 -x map-hifi hifi.filt.fastq.gz
 samtools view -h -b -S genome.sam -o genome.bam --threads 20
 samtools sort genome.bam -o genome.sorted.bam --threads 20
 samtools index genome.sorted.bam
