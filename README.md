@@ -1,4 +1,4 @@
-<img width="468" height="14" alt="image" src="https://github.com/user-attachments/assets/b34b96f8-b221-4e18-a26a-6a63ad025500" /># Bs_in_aphids
+# Bs_in_aphids
 Pipeline for identifying supernumerary B chromosomes in sumac gall aphids
 
 
@@ -9,7 +9,7 @@ To simplify the B chromosome assembly process, we first identified autosomes and
 #### 1.1.1 - Identify autosomes and Xs based on the genome of *Schlechtendalia chinensis*
 We first aligned hifiasm results to the top 13 scaffolds (chromosomes) of *Schlechtendalia chinensis* using LAST. Then we picked the top scaffolds that matched the chromosomes of *Schlechtendalia chinensis*
 ```
-conda activate /share/home/liyiyuan/miniconda3/envs/mamba/envs/last_v1648
+conda activate last_v1648
 
 # ref: https://github.com/aaannaw/Myospalax-CFi/blob/main/CFi_identification/Ancestral_karyotype_reconstruction.sh
 # ref: https://gitlab.com/mcfrith/last/-/blob/1648/doc/last-cookbook.rst
