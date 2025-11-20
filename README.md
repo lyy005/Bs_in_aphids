@@ -14,12 +14,12 @@ conda activate last_v1648
 # ref: https://github.com/aaannaw/Myospalax-CFi/blob/main/CFi_identification/Ancestral_karyotype_reconstruction.sh
 # ref: https://gitlab.com/mcfrith/last/-/blob/1648/doc/last-cookbook.rst
 
-# human and chimp example
+# human and chimp example (for example, s5h1 vs s1 and s5h1 vs s10h1 )
 #lastdb -P10 -c -U400 -uRY128 ref_db ref.fa
 #last-train -P10 --revsym -C2 ref_db q.fa > hc.train
 #lastal -P10 -D1e9 -C2 --split-f=MAF+ -p hc.train ref_db q.fa | last-split -r | maf-linked - > aln.maf
 
-# Aligning more distantly related genomes
+# Aligning more distantly related genomes (for example, s5h1 vs s6h1)
 lastdb -P10 -c ref_db ref.fa
 last-train -P10 --revsym -C2 ref_db q.fa > hl.train
 lastal -P10 -m2 -D1e9 -C2 --split-f=MAF+ -p hl.train ref_db q.fa | last-split -r | maf-linked - > aln.maf
