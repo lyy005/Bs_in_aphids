@@ -28,6 +28,11 @@ conda activate last_v1542
 last-dotplot aln.maf aln.maf.png --rot1=v --rot2=h
 ```
 
+The resulting dotplot looks like this:
+<img width="527" height="1000" alt="aln maf" src="https://github.com/user-attachments/assets/d03513a8-0e4c-46ca-a581-951b75c86fa1" />
+
+
+
 #### Map HiFi reads to hifiasm scaffolds
 Using samtools version 1.21 and minimap2 version 2.28
 ```
