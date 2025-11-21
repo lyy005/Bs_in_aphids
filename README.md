@@ -54,3 +54,10 @@ samtools fastq B_reads.bam | gzip B_reads.fastq.gz
 conda activate verkko_v2.2.1
 verkko -d run1_asm --hifi hifi.filt.fastq.gz --telomere-motif CCTAA
 ```
+
+## Identification of telomeres
+
+```
+conda activate seqtk_v1.4-r122
+seqtk telo -m CCTAA $i\.fa > $i\.fa.telo
+```
