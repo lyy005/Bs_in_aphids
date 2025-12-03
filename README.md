@@ -66,3 +66,39 @@ verkko -d run1_asm --hifi hifi.filt.fastq.gz --telomere-motif CCTAA
 conda activate seqtk_v1.4-r122
 seqtk telo -m CCTAA $i\.fa > $i\.fa.telo
 ```
+
+## Annotation of repeats
+To annotate repetitive content, we used EarlGrey. 
+
+We first annotated each genome separately:
+```
+conda activate earlgrey_v6.3.2
+earlGrey -g kaburagiaRhusicola.fa -s kaburagiaRhusicola -r arthropoda -o output -t 20 -c yes -e yes -d yes
+```
+
+Then we combined all the .strained outputs:
+```
+for i in s10h1 s10h2 s11h1 s11h2 s1 s3h1 s3h2 s4 s5h1 s5h2 s6
+do 
+ echo $i
+ perl add_spp_name.pl $i\.strained $i $i\.renamed.strained
+done
+```
+Clustered the strained sequences (ref: https://github.com/TobyBaril/EarlGrey/issues/216):
+
+```
+cat *.renamed.strained > combined.renamed.strained
+
+conda activate mmseqs2_v18
+mmseqs easy-cluster combined.renamed.strained combined.renamed.strained.easyCluster tmp --min-seq-id 0.8 -c 0.8 --cov-mode 1 -v 2 --threads 10 --cluster-reassign
+```
+
+Lastly, re-annotated all the genomes using the same library:
+```
+conda activate earlgrey_v6.3.2
+
+earlGreyAnnotationOnly -g kaburagiaRhusicola.fa -s kaburagiaRhusicola -o output -t 20 -l combined.renamed.strained.easyCluster_rep_seq.fasta
+```
+
+
+
