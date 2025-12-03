@@ -61,10 +61,25 @@ verkko -d run1_asm --hifi hifi.filt.fastq.gz --telomere-motif CCTAA
 ```
 
 ## Identification of telomeres
-
+We used two approaches: 
+### seqtk
+seqtk searches telomeres are the very end of each scaffold:
 ```
 conda activate seqtk_v1.4-r122
 seqtk telo -m CCTAA $i\.fa > $i\.fa.telo
+```
+### TRF
+On top of telomeres found by seqtk, TRF also searches for telomeres in the middle or close to the end of each scaffold:
+```
+conda activate trf_v4.10.0
+trf genome.fa 2 7 7 80 10 50 500 -f -d -m
+```
+
+## Annotation of ribosomal RNAs
+We used barrnap (https://github.com/tseemann/barrnap) to annotated rRNAs. 
+```
+conda activate barrnap
+barrnap --quiet s5h1.fa --kingdom euk
 ```
 
 ## Annotation of repeats
