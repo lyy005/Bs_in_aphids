@@ -1,6 +1,9 @@
 # Bs_in_aphids
 Pipeline for identifying supernumerary B chromosomes in sumac gall aphids
 
+Outline: 
+## 1 - Improving the assembly of Bs (#1---improving-the-assembly-of-Bs)
+
 
 ## 1 - Improving the assembly of Bs
 ### 1.1 - Extracting B-derived reads
