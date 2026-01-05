@@ -1,4 +1,4 @@
-# Bs_in_aphids
+<img width="468" height="13" alt="image" src="https://github.com/user-attachments/assets/a21c8e5b-54ae-410e-96c4-baed0195cf32" /><img width="468" height="14" alt="image" src="https://github.com/user-attachments/assets/b08e3b18-58e1-44b9-992d-aaa989f676a2" /># Bs_in_aphids
 Pipeline for identifying supernumerary B chromosomes in sumac gall aphids
 
 Outline: 
@@ -6,10 +6,9 @@ Outline:
 
 
 ## 1 - Improving the assembly of Bs
-### 1.1 - Extracting B-derived reads
-To simplify the B chromosome assembly process, we first identified autosomes and Xs based on sequencing homology.
+To simplify the B chromosome assembly process, we first identified autosomes and Xs based on sequencing homology. Then we assembled the B-derived reads to improve the assembly of Bs.
 
-#### Identify autosomes and Xs based on the genome of *Schlechtendalia chinensis*
+### 1.1 - Identifying autosomes and Xs based on the genome of *Schlechtendalia chinensis*
 We first aligned hifiasm results to the top 13 scaffolds (chromosomes) of *Schlechtendalia chinensis* using LAST. Then we picked the top scaffolds that matched the chromosomes of *Schlechtendalia chinensis*
 ```
 conda activate last_v1648
@@ -35,6 +34,8 @@ The resulting dotplot looks like this:
 <img width="527" height="1000" alt="aln maf" src="https://github.com/user-attachments/assets/d03513a8-0e4c-46ca-a581-951b75c86fa1" />
 
 
+#### Identify Xs based on resequencing data
+To further confirm the identified Xs, we sequenced males and females of *Kaburagia rhusicola rhusicola*, 
 
 #### Map HiFi reads to hifiasm scaffolds
 Using samtools version 1.21 and minimap2 version 2.28
@@ -63,29 +64,33 @@ conda activate verkko_v2.2.1
 verkko -d run1_asm --hifi hifi.filt.fastq.gz --telomere-motif CCTAA
 ```
 
-## Identification of telomeres
-We used two approaches: 
-### seqtk
+## 2 - Assessing the completeness of the genome and Bs
+To assess the completeness of the genome and the Bs, we checked the completeness of telomeres. We used two approaches: 
+
+### 2.1 - seqtk
 seqtk searches telomeres are the very end of each scaffold:
 ```
 conda activate seqtk_v1.4-r122
 seqtk telo -m CCTAA $i\.fa > $i\.fa.telo
 ```
-### TRF
+### 2.2 - TRF
 On top of telomeres found by seqtk, TRF also searches for telomeres in the middle or close to the end of each scaffold:
 ```
 conda activate trf_v4.10.0
 trf genome.fa 2 7 7 80 10 50 500 -f -d -m
 ```
 
-## Annotation of ribosomal RNAs
+## 3 - Characterize Bs in aphids
+We also characterized other features of the genomes and the Bs
+
+### 3.1 - Annotation of ribosomal RNAs
 We used barrnap (https://github.com/tseemann/barrnap) to annotated rRNAs. 
 ```
 conda activate barrnap
 barrnap --quiet s5h1.fa --kingdom euk
 ```
 
-## Annotation of repeats
+### 3.2 - Annotation of repeats
 To annotate repetitive content, we used EarlGrey. 
 
 We first annotated each genome separately:
@@ -117,6 +122,20 @@ conda activate earlgrey_v6.3.2
 
 earlGreyAnnotationOnly -g kaburagiaRhusicola.fa -s kaburagiaRhusicola -o output -t 20 -l combined.renamed.strained.easyCluster_rep_seq.fasta
 ```
+
+### 3.3 - DNA Methylation Analysis
+To identify DNA methylcations, we used pbmm2 (https://github.com/PacificBiosciences/pbmm2) and aligned_bam_to_cpg_scores version 3.0 (https://github.com/PacificBiosciences/pb-CpG-tools). 
+
+```
+conda activate pbmm2_1.17.0
+
+pbmm2 index genome.fa genome.mmi
+pbmm2 align genome.mmi hifi_reads.bam aligned.bam --preset CCS --sort --log-level DEBUG --num-threads 20
+
+aligned_bam_to_cpg_scores --bam aligned.bam --output-prefix cpg_denovo --threads 20 --modsites-mode denovo --ref genome.fa
+```
+
+
 
 
 
