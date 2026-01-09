@@ -1,4 +1,4 @@
-<img width="468" height="13" alt="image" src="https://github.com/user-attachments/assets/a21c8e5b-54ae-410e-96c4-baed0195cf32" /><img width="468" height="14" alt="image" src="https://github.com/user-attachments/assets/b08e3b18-58e1-44b9-992d-aaa989f676a2" /># Bs_in_aphids
+# Bs_in_aphids
 Pipeline for identifying supernumerary B chromosomes in sumac gall aphids
 
 Outline: 
@@ -135,7 +135,47 @@ pbmm2 align genome.mmi hifi_reads.bam aligned.bam --preset CCS --sort --log-leve
 aligned_bam_to_cpg_scores --bam aligned.bam --output-prefix cpg_denovo --threads 20 --modsites-mode denovo --ref genome.fa
 ```
 
+### 3.4 - TAD
 
+```
+step0 - mapping
+conda activate hicexplorer_v3.7.6
+
+bwa mem -A 1 -B 4 -E 50 -L 0 -t 40 genome.fa mate_R1.fastq.gz 2>>mate_R1.log | samtools view -Shb - > mate_R1.bam
+bwa mem -A 1 -B 4 -E 50 -L 0 -t 40 genome.fa mate_R2.fastq.gz 2>>mate_R2.log | samtools view -Shb - > mate_R2.bam
+hicBuildMatrix --samFiles mate_R1.bam mate_R2.bam \
+               --binSize 10000 \
+               --restrictionSequence GATC \
+               --danglingSequence GATC \
+               --restrictionCutFile cut_sites.bed \
+               --threads 40 \
+               --inputBufferSize 100000 \
+               --outBam ./hicMatrix/hic.bam \
+               -o ./hicMatrix/hic_matrix.h5 \
+               --QCfolder ./hicMatrix/hicQC \
+               --minMappingQuality 15
+
+# step1 - correction
+hicCorrectMatrix diagnostic_plot -m hic_matrix.h5 --perchr -o hic_matrix.diagnostic_plot.pdf
+
+hicCorrectMatrix correct -m hic_matrix.h5 -o hic_KRcorrected.h5 --correctionMethod KR
+hicCorrectMatrix diagnostic_plot -m hic_KRcorrected.h5 --perchr -o hic_KRcorrected.diagnostic_plot.pdf
+
+## change resolution from 10kb to 30kb
+hicMergeMatrixBins --matrix hic_KRcorrected.h5 --outFileName hic_KRcorrected_30kb.h5 --numBins 3
+
+# step2 - cis vs trans
+hicConvertFormat --matrices hic_KRcorrected_30kb.h5 --inputFormat h5 --outputFormat ginteractions --outFileName hic_KRcorrected_30kb.ginteractions
+
+## filter interactions with counts >= 3
+less -S hic_KRcorrected_30kb.ginteractions.tsv | awk '$7 >= 3' | cut -f 1,4 | sort | uniq -c > hic_KRcorrected_30kb.ginteractions.counts
+
+for i in B1 B2 B3 B4 B5
+do
+ perl step3_add_length.pl hic_KRcorrected_30kb.ginteractions.counts genome.fa.length $i hic_KRcorrected_30kb.ginteractions.$i\.counts
+done
+
+```
 
 
 
