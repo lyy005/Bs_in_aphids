@@ -70,8 +70,15 @@ To assess the completeness of the genome and the Bs, we checked the completeness
 ### 2.1 - seqtk
 seqtk searches telomeres are the very end of each scaffold:
 ```
+# search for telomeres at ends of each scaffolds
 conda activate seqtk_v1.4-r122
-seqtk telo -m CCTAA $i\.fa > $i\.fa.telo
+seqtk telo -m CCTAA genome.fa > genome.fa.telo
+
+# calculate the length of the assembly
+perl ./step1_assembly/length_distribution_V1.5.pl genome.fa
+
+# summarize the location of telomeres to a table
+perl ./step1_assembly/summarize_telomere.v0.92.pl genome.fa.telo genome.fa.length genome.fa.telo.summary
 ```
 ### 2.2 - TRF
 On top of telomeres found by seqtk, TRF also searches for telomeres in the middle or close to the end of each scaffold:
