@@ -31,6 +31,34 @@ For other mitochondrial genomes from NCBI, we ran MitoZ to annotate the protein-
 singularity run ~/bin/mitoZ/MitoZ_v3.6.sif mitoz annotate --workdir ./ --outprefix NCBI --thread_number 20 --fastafiles NCBI.fasta --species_name NCBI --clade Arthropoda
 ```
 
+### 1.4 - Phylogeny reconstruction using mitochondrial genes
+After mitoZ assembly and annotation, all mitochondrial genes should look like as follows. Each gene name is species name + ";" + gene name + ";" + length + coordinates on the genome
+```
+>Bapi;COX1;len=1536;[0:1536](+)
+ATAAAATGAATTTTTTCAACTAATCATAAAAATATTGGAACTTTATATTTTTTATTTGGTTTATGATCTGGAATAATTGGATCATCACTTAGAATATTA
+>Bapi;COX2;len=672;[1601:2273](+)
+ATATCTTGATTAAAACTAAGATTTCAAAATAGAAATTCACCATTAATAGAACAATTAATCTTCTTTCATGATCATACTATCTTTATTATTATCATAATT
+>Bapi;ATP8;len=159;[2419:2578](+)
+ATACCACAAATAGCTCCTATAAATTGATTAATAATATT
+```
+
+We then combined this file from all the species to combined.fasta. We first remove ":" characters. Then use a perl script to separate sequences by genes:
+```
+less -S combined.fasta | perl -ne 's/\:\>/\:/g; print; ' > cds.noCaret.fasta
+
+perl ./step1/step1.split_by_gene.pl cds.noCaret.fasta ./cds
+```
+
+Lastly, for each gene, we aligned them based on codon sequences (https://github.com/lyy005/codon_alignment) and removed poorly aligned sites using Gblocks version 0.91b. We built phylogenetic trees using IQ-Tree version 3.0.1: 
+```
+for i in ATP6 ATP8 COX1 COX2 COX3 CYTB ND1 ND2 ND3 ND4 ND4L ND5 ND6
+do
+perl ~/bin/codon_alignment_v1.5/codon_alignment.pl $i\.nt.fasta 5 0 > $i\.aln.log
+ echo $i
+ Gblocks $i\.nt.fasta.nt.cleanup.aln -t=c -b4=10 -b5=n -e=-gb > $i\.GBlock.log
+ perl ../step1/gblock_convert.pl $i\.nt.fasta.nt.cleanup.aln-gb > $i\.GBlocks.fas
+done
+```
 
 
 ## 1 - Genome assembly and annotation
