@@ -19,7 +19,10 @@ java -jar ~/bin/Trimmomatic-0.39/trimmomatic-0.39.jar PE -phred33 combined.1.fq.
 We assembled clean pair-end reads using MitoZ version 3.6 (https://github.com/linzhi2013/MitoZ). For the aphid mitochondrial genomes, we used invertebrate mitochondrial genetic code (“--clade Arthropoda --requiring_taxa Arthropoda” and metaSPAdes (“--assembler spades”). 
 
 ```
-singularity run ~/bin/mitoZ/MitoZ_v3.6.sif mitoz all --fq1 pe.1.fq.gz --fq2 pe.2.fq.gz --outprefix mitoz --thread_number 96 --workdir ./ --clade Arthropoda --requiring_taxa Arthropoda --assembler spades --memory 1400
+singularity run ~/bin/mitoZ/MitoZ_v3.6.sif mitoz all --fq1 pe.1.fq.gz --fq2 pe.2.fq.gz \
+                                                      --outprefix mitoz --thread_number 96 \
+                                                      --workdir ./ --clade Arthropoda --requiring_taxa Arthropoda \
+                                                      --assembler spades --memory 1400
 ```
 
 ## 1 - Genome assembly and annotation
