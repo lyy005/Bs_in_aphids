@@ -1,13 +1,16 @@
 # Bs_in_aphids
 Pipeline for identifying supernumerary B chromosomes in sumac gall aphids
 
+<img width="2354" height="1032" alt="image" src="https://github.com/user-attachments/assets/c89e0f2e-8296-4814-ac75-07377e942e4e" />
+
+
 ## Outline: 
 - [1 - Improving the assembly of Bs](#1---improving-the-assembly-of-bs)
   - [1.1 - Improving the assembly of Bs](#1---improving-the-assembly-of-bs)
 
 ## 1 - Mitochondrial genome assembly and species identification
 ### 1.1 - Quality control
-We first removed low-quality base pairs and sequencing adapters using Trimmomatic. The combined_MGI.fa file is a combination of Illumina and MGI sequencing adapters. The same parameters were used for other sequencing library quality controls. 
+We first removed low-quality base pairs and sequencing adapters using Trimmomatic. The combined_MGI.fa file is a combination of Illumina and MGI sequencing adapters. We used the same parameters for other sequencing library quality controls. 
 ```
 java -jar ~/bin/Trimmomatic-0.39/trimmomatic-0.39.jar PE -phred33 combined.1.fq.gz combined.2.fq.gz \
           pe.1.fq.gz se.1.fq.gz pe.2.fq.gz se.2.fq.gz \
