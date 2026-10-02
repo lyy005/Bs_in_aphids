@@ -12,6 +12,12 @@ We first removed low-quality base pairs and sequencing adapters using Trimmomati
 java -jar ~/bin/Trimmomatic-0.39/trimmomatic-0.39.jar PE -phred33 combined.1.fq.gz combined.2.fq.gz pe.1.fq.gz se.1.fq.gz pe.2.fq.gz se.2.fq.gz ILLUMINACLIP:./step_1.1/combined_MGI.fa:2:30:10:8:TRUE LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:36 -threads 10
 ```
 
+### 1.2 Assemble mitochondrial genomes using MitoZ
+We assembled clean pair-end reads using MitoZ version 3.6:
+```
+singularity run ~/bin/mitoZ/MitoZ_v3.6.sif mitoz all --fq1 pe.1.fq.gz --fq2 pe.2.fq.gz --outprefix mitoz --thread_number 96 --workdir ./ --clade Arthropoda --requiring_taxa Arthropoda --assembler spades --memory 1400
+```
+
 ## 1 - Genome assembly and annotation
 To simplify the B chromosome assembly process, we first identified autosomes and Xs based on sequencing homology. Then we assembled the B-derived reads to improve the assembly of Bs.
 
