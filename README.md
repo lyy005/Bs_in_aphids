@@ -6,7 +6,8 @@ Photos of the beautiful galls induced by these aphids. Scale bar represents 1 cm
 
 
 ## Outline: 
-- [1 - Mitochondrial genome assembly and species identification] (#1---improving-the-assembly-of-bs)
+- [1 - Mitochondrial genome assembly and species identification](#1---mitochondrial-genome-assembly-and-species-identification)
+  - [1.1 - Quality control](https://github.com/lyy005/Bs_in_aphids#11---quality-control)
 - [1 - Improving the assembly of Bs](#1---improving-the-assembly-of-bs)
   - [1.1 - Improving the assembly of Bs](#1---improving-the-assembly-of-bs)
 
