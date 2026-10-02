@@ -24,6 +24,15 @@ singularity run ~/bin/mitoZ/MitoZ_v3.6.sif mitoz all --fq1 pe.1.fq.gz --fq2 pe.2
             --requiring_taxa Arthropoda --assembler spades --memory 1400
 ```
 
+### 1.3 - Annotate mitochondrial genomes from NCBI
+For other mitochondrial genomes from NCBI, we ran MitoZ to annotate the protein-coding genes so that the formats of mitochondrial genes were consistent for the mitochondrial genomes from our study and from NCBI. 
+
+```
+singularity run ~/bin/mitoZ/MitoZ_v3.6.sif mitoz annotate --workdir ./ --outprefix NCBI --thread_number 20 --fastafiles NCBI.fasta --species_name NCBI --clade Arthropoda
+```
+
+
+
 ## 1 - Genome assembly and annotation
 To simplify the B chromosome assembly process, we first identified autosomes and Xs based on sequencing homology. Then we assembled the B-derived reads to improve the assembly of Bs.
 
