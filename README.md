@@ -1,6 +1,7 @@
 # Bs_in_aphids
 Pipeline for identifying supernumerary B chromosomes in sumac gall aphids
 
+Photos of the beautiful galls induced by these aphids:
 <img width="2354" height="1032" alt="image" src="https://github.com/user-attachments/assets/c89e0f2e-8296-4814-ac75-07377e942e4e" />
 
 
