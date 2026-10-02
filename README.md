@@ -1,4 +1,4 @@
-# Bs_in_aphids
+<img width="468" height="25" alt="image" src="https://github.com/user-attachments/assets/41d5b8c4-f03d-4cd8-931b-4900bc0073e2" /># Bs_in_aphids
 Pipeline for identifying supernumerary B chromosomes in sumac gall aphids
 
 Photos of the beautiful galls induced by these aphids. Scale bar represents 1 cm. 
@@ -21,7 +21,7 @@ java -jar ~/bin/Trimmomatic-0.39/trimmomatic-0.39.jar PE -phred33 combined.1.fq.
           LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:36 -threads 10
 ```
 
-### 1.2 - Assemble mitochondrial genomes using MitoZ
+### 1.2 - Assembly of mitochondrial genomes from Illumina data using MitoZ
 We assembled clean pair-end reads using MitoZ version 3.6 (https://github.com/linzhi2013/MitoZ). For the aphid mitochondrial genomes, we used the invertebrate mitochondrial genetic code (“--clade Arthropoda --requiring_taxa Arthropoda” and metaSPAdes (“--assembler spades”). 
 
 ```
@@ -30,7 +30,7 @@ singularity run ~/bin/mitoZ/MitoZ_v3.6.sif mitoz all --fq1 pe.1.fq.gz --fq2 pe.2
             --requiring_taxa Arthropoda --assembler spades --memory 1400
 ```
 
-### 1.3 - Annotate mitochondrial genomes from NCBI
+### 1.3 - Annotation of mitochondrial genomes from NCBI using MitoZ
 For other mitochondrial genomes from NCBI, we ran MitoZ to annotate the protein-coding genes so that the formats of mitochondrial genes were consistent for the mitochondrial genomes from our study and from NCBI. 
 
 ```
@@ -87,11 +87,27 @@ perl step3.Concatenation_v1.0.pl gene.list concatenated.fasta spp.list
 
 ```
 
-## 1 - Genome assembly and annotation
+## 2 - Genome assembly and annotation
 To simplify the B chromosome assembly process, we first identified autosomes and Xs based on sequencing homology. Then we assembled the B-derived reads to improve the assembly of Bs.
 
-### 1.1 - 
+### 2.1 - Generating CCS reads
+*K. r. ovogallis*, *K. r. ovatirhusicola*, *K. r. rhusicola*, and *K. r. sp.* were sequenced on PacBio II platforms and raw subreads were generated. To retrieve the Circular Consensus Sequencing (CCS) reads, we used ccs (https://github.com/PacificBiosciences/ccs) to convert subreads to CCS reads. Reads from each pass were assembled with hifiasm. The pass with the highest N50 and the most complete BUSCOs was used for the final assembly. 
 
+Other species were sequenced on PacBio II platforms. Therefore, CCS reads were directly generated and assembled using hifiasm. 
+
+
+```
+for i in 3 4 5 6 7 8 9 10
+do
+ ccs example.subreads.bam ccs$i\.fastq.gz --minPasses $i --reportFile ccs$i\_report.txt --num-threads 40
+done
+```
+
+### 2.2 - Genome assembly
+We used hifiasm version 0.25.0 to assemble the HiFi reads with dual scaffolding, aphid telomere sequences, and HiC data
+```
+~/binhifiasm_v0.25.0/hifiasm -o ccs --dual-scaf --telo-m CCTAA --primary -t 96 --h1 HiC_R1.fq.gz --h2 HiC_R2.fq.gz hifi.filt.fastq.gz
+```
 
 ### 1.1 - Identifying autosomes and Xs based on the genome of *Schlechtendalia chinensis*
 We first aligned hifiasm results to the top 13 scaffolds (chromosomes) of *Schlechtendalia chinensis* using LAST. Then we picked the top scaffolds that matched the chromosomes of *Schlechtendalia chinensis*
