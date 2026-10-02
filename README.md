@@ -5,7 +5,7 @@ Pipeline for identifying supernumerary B chromosomes in sumac gall aphids
 - [1 - Improving the assembly of Bs](#1---improving-the-assembly-of-bs)
 
 
-## 1 - Improving the assembly of Bs
+## 1 - Genome assembly and annotation
 To simplify the B chromosome assembly process, we first identified autosomes and Xs based on sequencing homology. Then we assembled the B-derived reads to improve the assembly of Bs.
 
 ### 1.1 - Identifying autosomes and Xs based on the genome of *Schlechtendalia chinensis*
