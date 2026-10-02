@@ -5,8 +5,18 @@ Pipeline for identifying supernumerary B chromosomes in sumac gall aphids
 - [1 - Improving the assembly of Bs](#1---improving-the-assembly-of-bs)
   - [1.1 - Improving the assembly of Bs](#1---improving-the-assembly-of-bs)
 
+## 1 - Mitochondrial genome assembly and species identification
+### 1.1 Quality control
+We first removed low-quality base pairs and sequencing adapters using Trimmomatic. The combined_MGI.fa file is a combination of Illumina and MGI sequencing adapters. The same parameters were used for other sequencing library quality controls. 
+```
+java -jar ~/bin/Trimmomatic-0.39/trimmomatic-0.39.jar PE -phred33 combined.1.fq.gz combined.2.fq.gz pe.1.fq.gz se.1.fq.gz pe.2.fq.gz se.2.fq.gz ILLUMINACLIP:combined_MGI.fa:2:30:10:8:TRUE LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:36 -threads 10
+```
+
 ## 1 - Genome assembly and annotation
 To simplify the B chromosome assembly process, we first identified autosomes and Xs based on sequencing homology. Then we assembled the B-derived reads to improve the assembly of Bs.
+
+### 1.1 - 
+
 
 ### 1.1 - Identifying autosomes and Xs based on the genome of *Schlechtendalia chinensis*
 We first aligned hifiasm results to the top 13 scaffolds (chromosomes) of *Schlechtendalia chinensis* using LAST. Then we picked the top scaffolds that matched the chromosomes of *Schlechtendalia chinensis*
