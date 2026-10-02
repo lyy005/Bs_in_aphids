@@ -6,13 +6,16 @@ Pipeline for identifying supernumerary B chromosomes in sumac gall aphids
   - [1.1 - Improving the assembly of Bs](#1---improving-the-assembly-of-bs)
 
 ## 1 - Mitochondrial genome assembly and species identification
-### 1.1 Quality control
+### 1.1 - Quality control
 We first removed low-quality base pairs and sequencing adapters using Trimmomatic. The combined_MGI.fa file is a combination of Illumina and MGI sequencing adapters. The same parameters were used for other sequencing library quality controls. 
 ```
-java -jar ~/bin/Trimmomatic-0.39/trimmomatic-0.39.jar PE -phred33 combined.1.fq.gz combined.2.fq.gz pe.1.fq.gz se.1.fq.gz pe.2.fq.gz se.2.fq.gz ILLUMINACLIP:./step_1.1/combined_MGI.fa:2:30:10:8:TRUE LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:36 -threads 10
+java -jar ~/bin/Trimmomatic-0.39/trimmomatic-0.39.jar PE -phred33 combined.1.fq.gz combined.2.fq.gz \
+          pe.1.fq.gz se.1.fq.gz pe.2.fq.gz se.2.fq.gz \
+          ILLUMINACLIP:./step_1.1/combined_MGI.fa:2:30:10:8:TRUE \
+          LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:36 -threads 10
 ```
 
-### 1.2 Assemble mitochondrial genomes using MitoZ
+### 1.2 - Assemble mitochondrial genomes using MitoZ
 We assembled clean pair-end reads using MitoZ version 3.6 (https://github.com/linzhi2013/MitoZ). For the aphid mitochondrial genomes, we used invertebrate mitochondrial genetic code (“--clade Arthropoda --requiring_taxa Arthropoda” and metaSPAdes (“--assembler spades”). 
 
 ```
