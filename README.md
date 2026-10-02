@@ -1,4 +1,4 @@
-<img width="468" height="25" alt="image" src="https://github.com/user-attachments/assets/41d5b8c4-f03d-4cd8-931b-4900bc0073e2" /># Bs_in_aphids
+# Bs_in_aphids
 Pipeline for identifying supernumerary B chromosomes in sumac gall aphids
 
 Photos of the beautiful galls induced by these aphids. Scale bar represents 1 cm. 
@@ -8,8 +8,11 @@ Photos of the beautiful galls induced by these aphids. Scale bar represents 1 cm
 ## Outline: 
 - [1 - Mitochondrial genome assembly and species identification](#1---mitochondrial-genome-assembly-and-species-identification)
   - [1.1 - Quality control](#11---quality-control)
-- [1 - Improving the assembly of Bs](#1---improving-the-assembly-of-bs)
-  - [1.1 - Improving the assembly of Bs](#1---improving-the-assembly-of-bs)
+  - [1.2 - Assembly of mitochondrial genomes from Illumina data using MitoZ](#12---assembly-of-mitochondrial-genomes-from-illumina-data-using-mitoz)
+  - [1.3 - Annotation of mitochondrial genomes from NCBI using MitoZ](#13---annotation-of-mitochondrial-genomes-from-ncbi-using-mitoz)
+  - [1.4 - Phylogeny reconstruction using mitochondrial genes](#14---phylogeny-reconstruction-using-mitochondrial-genes)
+- [2 - Genome assembly and annotation](#2---genome-assembly-and-annotation)
+  - [2.1 - Generating CCS reads](#21---generating-ccs-reads)
 
 ## 1 - Mitochondrial genome assembly and species identification
 ### 1.1 - Quality control
