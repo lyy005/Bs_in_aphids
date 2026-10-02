@@ -11,12 +11,12 @@ We first removed low-quality base pairs and sequencing adapters using Trimmomati
 ```
 java -jar ~/bin/Trimmomatic-0.39/trimmomatic-0.39.jar PE -phred33 combined.1.fq.gz combined.2.fq.gz \
           pe.1.fq.gz se.1.fq.gz pe.2.fq.gz se.2.fq.gz \
-          ILLUMINACLIP:./step_1.1/combined_MGI.fa:2:30:10:8:TRUE \
+          ILLUMINACLIP:./step_1/combined_MGI.fa:2:30:10:8:TRUE \
           LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15 MINLEN:36 -threads 10
 ```
 
 ### 1.2 - Assemble mitochondrial genomes using MitoZ
-We assembled clean pair-end reads using MitoZ version 3.6 (https://github.com/linzhi2013/MitoZ). For the aphid mitochondrial genomes, we used invertebrate mitochondrial genetic code (“--clade Arthropoda --requiring_taxa Arthropoda” and metaSPAdes (“--assembler spades”). 
+We assembled clean pair-end reads using MitoZ version 3.6 (https://github.com/linzhi2013/MitoZ). For the aphid mitochondrial genomes, we used the invertebrate mitochondrial genetic code (“--clade Arthropoda --requiring_taxa Arthropoda” and metaSPAdes (“--assembler spades”). 
 
 ```
 singularity run ~/bin/mitoZ/MitoZ_v3.6.sif mitoz all --fq1 pe.1.fq.gz --fq2 pe.2.fq.gz \
@@ -32,7 +32,7 @@ singularity run ~/bin/mitoZ/MitoZ_v3.6.sif mitoz annotate --workdir ./ --outpref
 ```
 
 ### 1.4 - Phylogeny reconstruction using mitochondrial genes
-After mitoZ assembly and annotation, all mitochondrial genes should look like as follows. Each gene name is species name + ";" + gene name + ";" + length + coordinates on the genome
+After mitoZ assembly and annotation, all mitochondrial genes should look as follows. Each gene name is species name + ";" + gene name + ";" + length + coordinates on the genome
 ```
 >Bapi;COX1;len=1536;[0:1536](+)
 ATAAAATGAATTTTTTCAACTAATCATAAAAATATTGGAACTTTATATTTTTTATTTGGTTTATGATCTGGAATAATTGGATCATCACTTAGAATATTA
@@ -42,24 +42,44 @@ ATATCTTGATTAAAACTAAGATTTCAAAATAGAAATTCACCATTAATAGAACAATTAATCTTCTTTCATGATCATACTAT
 ATACCACAAATAGCTCCTATAAATTGATTAATAATATT
 ```
 
-We then combined this file from all the species to combined.fasta. We first remove ":" characters. Then use a perl script to separate sequences by genes:
+We then combined this file from all the species to combined.fasta. We first remove ":" characters. Then use a Perl script to separate sequences by genes:
 ```
-less -S combined.fasta | perl -ne 's/\:\>/\:/g; print; ' > cds.noCaret.fasta
+less -S ./step1/combined.fasta | perl -ne 's/\:\>/\:/g; print; ' > cds.noCaret.fasta
 
 perl ./step1/step1.split_by_gene.pl cds.noCaret.fasta ./cds
 ```
 
-Lastly, for each gene, we aligned them based on codon sequences (https://github.com/lyy005/codon_alignment) and removed poorly aligned sites using Gblocks version 0.91b. We built phylogenetic trees using IQ-Tree version 3.0.1: 
+Then we aligned each gene based on codon sequences (https://github.com/lyy005/codon_alignment) and removed poorly aligned sites using Gblocks version 0.91b. 
 ```
 for i in ATP6 ATP8 COX1 COX2 COX3 CYTB ND1 ND2 ND3 ND4 ND4L ND5 ND6
 do
-perl ~/bin/codon_alignment_v1.5/codon_alignment.pl $i\.nt.fasta 5 0 > $i\.aln.log
  echo $i
+ # codon alignment
+ perl ~/bin/codon_alignment_v1.5/codon_alignment.pl $i\.nt.fasta 5 0 > $i\.aln.log
+
+ # Gblocks
  Gblocks $i\.nt.fasta.nt.cleanup.aln -t=c -b4=10 -b5=n -e=-gb > $i\.GBlock.log
- perl ../step1/gblock_convert.pl $i\.nt.fasta.nt.cleanup.aln-gb > $i\.GBlocks.fas
+
+ # convert gblocks output to fasta formats
+ perl ./step1/step2.gblock_convert.pl $i\.nt.fasta.nt.cleanup.aln-gb > $i\.GBlocks.fas
 done
 ```
 
+Lastly, we built phylogenetic trees using IQ-Tree version 3.0.1. To do that, we need two files: 1. a file with all the species names, and 2. a file with the path to each gene alignment. 
+
+The spp.list file is under ./step1/
+
+```
+# make the gene list file: 
+ls ./cds/*.GBlocks.fas > gene.list
+
+# concatenate gene together
+perl step3.Concatenation_v1.0.pl gene.list concatenated.fasta spp.list
+
+# make the tree
+~/bin/iqtree/iqtree-3.0.1-Linux/bin/iqtree3 -s concatenated.fasta -B 1000 -T 10 -o Bapi --prefix iqtree3_output
+
+```
 
 ## 1 - Genome assembly and annotation
 To simplify the B chromosome assembly process, we first identified autosomes and Xs based on sequencing homology. Then we assembled the B-derived reads to improve the assembly of Bs.
