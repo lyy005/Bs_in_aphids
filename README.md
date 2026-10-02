@@ -20,9 +20,8 @@ We assembled clean pair-end reads using MitoZ version 3.6 (https://github.com/li
 
 ```
 singularity run ~/bin/mitoZ/MitoZ_v3.6.sif mitoz all --fq1 pe.1.fq.gz --fq2 pe.2.fq.gz \
-                                                      --outprefix mitoz --thread_number 96 \
-                                                      --workdir ./ --clade Arthropoda --requiring_taxa Arthropoda \
-                                                      --assembler spades --memory 1400
+            --outprefix mitoz --thread_number 96 --workdir ./ --clade Arthropoda \
+            --requiring_taxa Arthropoda --assembler spades --memory 1400
 ```
 
 ## 1 - Genome assembly and annotation
