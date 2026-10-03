@@ -109,7 +109,7 @@ done
 ### 2.2 - Genome assembly using hifiasm
 We used hifiasm version 0.25.0 to assemble the HiFi reads with dual scaffolding, aphid telomere sequences, and HiC data. 
 
-Before assembly, HiC data were also filtered using Trimmomatic using the same command as the Quality control process in 1.1 [1.1 - Quality control](#11---quality-control)
+Before assembly, HiC data were also filtered using Trimmomatic using the same command as the Quality control process in [1.1 - Quality control](#11---quality-control). 
 
 ```
 ~/binhifiasm_v0.25.0/hifiasm -o ccs --dual-scaf --telo-m CCTAA --primary -t 96 --h1 HiC_R1.fq.gz --h2 HiC_R2.fq.gz hifi.filt.fastq.gz
@@ -120,8 +120,38 @@ awk '/^S/{print ">"$2;print $3}' ccs.hic.hap2.p_ctg.gfa > ccs.hic.hap2.p_ctg.fa
 ```
 
 ### 2.3 - Scaffolding using HiC data
-The outputs of hifiasm were scaffolded based on HiC contacts using the Arima Genomics mapping pipeline (https://github.com/ArimaGenomics/mapping_pipeline). 
+The outputs of hifiasm were scaffolded based on HiC contacts using the Arima Genomics mapping pipeline (https://github.com/ArimaGenomics/mapping_pipeline). Each haplotype was scaffolded independently. draft.fa file was the output of hifiasm assembly (either ccs.hic.hap1.p_ctg.fa or ccs.hic.hap2.p_ctg.fa).
 
+```
+# Step 0: Index reference
+~/bin/bwa/bwa_v0.7.17/bwa-0.7.17/bwa index -a bwtsw -p draft.fa draft.fa
+
+# Step 1.A: FASTQ to BAM (forward HiC reads)
+~/bin/bwa/bwa_v0.7.17/bwa-0.7.17/bwa mem -t 4 draft.fa hic_R1.fastq.gz | samtools view -@ 4 -Sb - > hic_R1.bam
+
+# Step 1.B: FASTQ to BAM (reverse HiC reads)
+~/bin/bwa/bwa_v0.7.17/bwa-0.7.17/bwa mem -t 4 draft.fa hic_R2.fastq.gz | samtools view -@ 40 -Sb - > hic_R2.bam
+
+# Step 2.A: Filter 5' end (forward HiC reads)
+samtools view -h hic_R1.bam | perl ~/Arima_mapping_pipeline/filter_five_end.pl | samtools view -Sb - > hic_R1.filter.bam
+
+# Step 2.B: Filter 5' end (2nd)
+samtools view -h hic_R2.bam | perl ~/Arima_mapping_pipeline/filter_five_end.pl | samtools view -Sb - > hic_R2.filter.bam
+
+# Step 3A: Pair reads & mapping quality filter
+perl ~/Arima_mapping_pipeline/two_read_bam_combiner.pl hic_R1.filter.bam hic_R2.filter.bam samtools 10 | samtools view -bS -t draft.fa.fai - |samtools sort -@ 40 -o hic.combined.bam -
+
+# Step 3B: Add read group
+java -Xmx4G -Djava.io.tmpdir=temp/ -jar ~/bin/picard/picard_v2.27.3/picard.jar AddOrReplaceReadGroups INPUT=hic.combined.bam OUTPUT=hic.combined.readgroup.bam ID="hic" LB="hic" SM=aphids PL=ILLUMINA PU=none
+
+# Step 4: Mark duplicates
+echo "Step 4: Mark duplicates"
+java -Xmx30G -XX:-UseGCOverheadLimit -Djava.io.tmpdir=temp/ -jar ~/bin/picard/picard_v2.27.3/picard.jar MarkDuplicates INPUT=hic.combined.readgroup.bam OUTPUT=hic.combined.readgroup.dereplicate.bam METRICS_FILE=metrics.hic.combined.readgroup.dereplicate.txt TMP_DIR=temp/ ASSUME_SORTED=TRUE VALIDATION_STRINGENCY=LENIENT REMOVE_DUPLICATES=TRUE
+
+samtools index hic.combined.readgroup.dereplicate.bam
+
+perl ~/Arima_mapping_pipeline/get_stats.pl hic.combined.readgroup.dereplicate.bam > hic.combined.readgroup.dereplicate.bam.stats
+```
 
 
 ### 1.1 - Identifying autosomes and Xs based on the genome of *Schlechtendalia chinensis*
