@@ -51,7 +51,7 @@ ATATCTTGATTAAAACTAAGATTTCAAAATAGAAATTCACCATTAATAGAACAATTAATCTTCTTTCATGATCATACTAT
 ATACCACAAATAGCTCCTATAAATTGATTAATAATATT
 ```
 
-We then combined this file from all the species to combined.fasta. We first remove ":" characters. Then use a Perl script to separate sequences by genes:
+We then combined this file from all the species into combined.fasta. We first removed ":" characters. Then use a Perl script to separate sequences by genes:
 ```
 less -S ./step1/combined.fasta | perl -ne 's/\:\>/\:/g; print; ' > cds.noCaret.fasta
 
@@ -82,7 +82,7 @@ The spp.list file is under ./step1/
 # make the gene list file: 
 ls ./cds/*.GBlocks.fas > gene.list
 
-# concatenate gene together
+# concatenate genes together
 perl step3.Concatenation_v1.0.pl gene.list concatenated.fasta spp.list
 
 # make the tree
@@ -106,11 +106,23 @@ do
 done
 ```
 
-### 2.2 - Genome assembly
-We used hifiasm version 0.25.0 to assemble the HiFi reads with dual scaffolding, aphid telomere sequences, and HiC data
+### 2.2 - Genome assembly using hifiasm
+We used hifiasm version 0.25.0 to assemble the HiFi reads with dual scaffolding, aphid telomere sequences, and HiC data. 
+
+Before assembly, HiC data were also filtered using Trimmomatic using the same command as the Quality control process in 1.1 [1.1 - Quality control](#11---quality-control)
+
 ```
 ~/binhifiasm_v0.25.0/hifiasm -o ccs --dual-scaf --telo-m CCTAA --primary -t 96 --h1 HiC_R1.fq.gz --h2 HiC_R2.fq.gz hifi.filt.fastq.gz
+
+# converting .gfa files to .fasta files
+awk '/^S/{print ">"$2;print $3}' ccs.hic.hap1.p_ctg.gfa > ccs.hic.hap1.p_ctg.fa
+awk '/^S/{print ">"$2;print $3}' ccs.hic.hap2.p_ctg.gfa > ccs.hic.hap2.p_ctg.fa
 ```
+
+### 2.3 - Scaffolding using HiC data
+The outputs of hifiasm were scaffolded based on HiC contacts using the Arima Genomics mapping pipeline (https://github.com/ArimaGenomics/mapping_pipeline). 
+
+
 
 ### 1.1 - Identifying autosomes and Xs based on the genome of *Schlechtendalia chinensis*
 We first aligned hifiasm results to the top 13 scaffolds (chromosomes) of *Schlechtendalia chinensis* using LAST. Then we picked the top scaffolds that matched the chromosomes of *Schlechtendalia chinensis*
