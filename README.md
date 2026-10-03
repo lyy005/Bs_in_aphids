@@ -125,7 +125,7 @@ awk '/^S/{print ">"$2;print $3}' ccs.hic.hap2.p_ctg.gfa > ccs.hic.hap2.p_ctg.fa
 ```
 
 ### 2.3 - Scaffolding using HiC data
-The outputs of hifiasm were scaffolded based on HiC contacts using the Arima Genomics mapping pipeline (https://github.com/ArimaGenomics/mapping_pipeline). Each haplotype was scaffolded independently. draft.fa file was the output of hifiasm assembly (either ccs.hic.hap1.p_ctg.fa or ccs.hic.hap2.p_ctg.fa).
+The outputs of hifiasm were scaffolded based on HiC contacts using the Arima Genomics mapping pipeline (https://github.com/ArimaGenomics/mapping_pipeline) and YaHS version 1.2.2 (https://github.com/c-zhou/yahs). Each haplotype was scaffolded independently. draft.fa file was the output of hifiasm assembly (either ccs.hic.hap1.p_ctg.fa or ccs.hic.hap2.p_ctg.fa).
 
 ```
 # Step 0: Index reference
@@ -160,11 +160,41 @@ perl ~/Arima_mapping_pipeline/get_stats.pl hic.combined.readgroup.dereplicate.ba
 samtools faidx draft.fa ~/bin/yahs/yahs_v1.2.2/yahs --no-contig-ec -e GATC draft.fa hic.combined.readgroup.dereplicate.bam
 ```
 
-We used the final YaHS output, yahs.out_scaffolds_final.agp, as the reference for scaffolding. But we also performed manual curation to confirm that the corrections suggested by YaHS was correct. 
+We used the final YaHS output, yahs.out_scaffolds_final.agp, as the reference for scaffolding. But we also performed manual curation to confirm that the corrections suggested by YaHS were correct. 
 
 ### 2.4 - Manual curation
-We confirmed 
+We manually curated scaffolds using CurationPretext version 1.6.1 (https://github.com/sanger-tol/curationpretext) and PretextView version 1.0.3 (https://github.com/sanger-tol/PretextView).
 
+We first converted HiC .fastq.gz files to .cram files using SAMtools and HiFi .fastq.gz files to .fasta format. We ran the CurationPretext pipeline on the scaffolds from both haplotypes 1 and 2 from hifiasm.
+
+```
+samtools import -@10 -r ID:aphid -r CN:aphid -r PU:hic -r SM:sample6 hic_R1.fastq.gz hic_R2.fastq.gz -o hic.cram
+samtools index hic.cram
+
+conda activate seqkit_v2.2.0
+seqkit fq2fa hifi.filt.fastq.gz -o hifi.fasta.gz --threads 10
+
+cat ccs.hic.hap1.p_ctg.fa ccs.hic.hap2.p_ctg.fa > genome.fa
+```
+
+Then we made a parameters file:
+```
+input: "~/PretextView_hifiasm/genome.fa"
+outdir: "./output/"
+teloseq: "TTAGG"
+sample: "s5"
+reads: ["~/PretextView_hifiasm/pacbio/hifi.fasta.gz"]
+read_type: "hifi"
+cram: ["~/PretextView_hifiasm/hic/hic.cram"]
+```
+
+We ran the CurationPretext pipeline:
+```
+nextflow run ~/bin/curationpretext/v1.6.1 -profile singularity -params-file params.yaml
+```
+
+### 2.5 - Improving the B chromosome assembly
+To 
 
 ### 1.1 - Identifying autosomes and Xs based on the genome of *Schlechtendalia chinensis*
 We first aligned hifiasm results to the top 13 scaffolds (chromosomes) of *Schlechtendalia chinensis* using LAST. Then we picked the top scaffolds that matched the chromosomes of *Schlechtendalia chinensis*
