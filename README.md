@@ -145,13 +145,20 @@ perl ~/Arima_mapping_pipeline/two_read_bam_combiner.pl hic_R1.filter.bam hic_R2.
 java -Xmx4G -Djava.io.tmpdir=temp/ -jar ~/bin/picard/picard_v2.27.3/picard.jar AddOrReplaceReadGroups INPUT=hic.combined.bam OUTPUT=hic.combined.readgroup.bam ID="hic" LB="hic" SM=aphids PL=ILLUMINA PU=none
 
 # Step 4: Mark duplicates
-echo "Step 4: Mark duplicates"
 java -Xmx30G -XX:-UseGCOverheadLimit -Djava.io.tmpdir=temp/ -jar ~/bin/picard/picard_v2.27.3/picard.jar MarkDuplicates INPUT=hic.combined.readgroup.bam OUTPUT=hic.combined.readgroup.dereplicate.bam METRICS_FILE=metrics.hic.combined.readgroup.dereplicate.txt TMP_DIR=temp/ ASSUME_SORTED=TRUE VALIDATION_STRINGENCY=LENIENT REMOVE_DUPLICATES=TRUE
 
 samtools index hic.combined.readgroup.dereplicate.bam
 
 perl ~/Arima_mapping_pipeline/get_stats.pl hic.combined.readgroup.dereplicate.bam > hic.combined.readgroup.dereplicate.bam.stats
+
+# scaffolding
+samtools faidx draft.fa ~/bin/yahs/yahs_v1.2.2/yahs --no-contig-ec -e GATC draft.fa hic.combined.readgroup.dereplicate.bam
 ```
+
+We used the final YaHS output, yahs.out_scaffolds_final.agp, as the reference for scaffolding. But we also performed manual curation to confirm that the corrections suggested by YaHS was correct. 
+
+### 2.4 - Manual curation
+We confirmed 
 
 
 ### 1.1 - Identifying autosomes and Xs based on the genome of *Schlechtendalia chinensis*
