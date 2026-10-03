@@ -38,7 +38,8 @@ singularity run ~/bin/mitoZ/MitoZ_v3.6.sif mitoz all --fq1 pe.1.fq.gz --fq2 pe.2
 For other mitochondrial genomes from NCBI, we ran MitoZ to annotate the protein-coding genes so that the formats of mitochondrial genes were consistent for the mitochondrial genomes from our study and from NCBI. 
 
 ```
-singularity run ~/bin/mitoZ/MitoZ_v3.6.sif mitoz annotate --workdir ./ --outprefix NCBI --thread_number 20 --fastafiles NCBI.fasta --species_name NCBI --clade Arthropoda
+singularity run ~/bin/mitoZ/MitoZ_v3.6.sif mitoz annotate --workdir ./ --outprefix NCBI \
+          --thread_number 20 --fastafiles NCBI.fasta --species_name NCBI --clade Arthropoda
 ```
 
 ### 1.4 - Phylogeny reconstruction using mitochondrial genes
