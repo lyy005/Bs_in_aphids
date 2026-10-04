@@ -1,4 +1,4 @@
-# Bs_in_aphids
+<img width="468" height="13" alt="image" src="https://github.com/user-attachments/assets/ad689e91-38dd-4f59-a8dd-9d6773fb56cb" /># Bs_in_aphids
 Pipeline for identifying supernumerary B chromosomes in sumac gall aphids
 
 Photos of the sumac galls induced by these aphids. Scale bar represents 1 cm. 
@@ -192,6 +192,27 @@ We ran the CurationPretext pipeline:
 ```
 nextflow run ~/bin/curationpretext/v1.6.1 -profile singularity -params-file params.yaml
 ```
+
+### 2.5 - Annotation
+To annotate genes, we followed the annotation pipeline of BRAKER version 3.0.8. 
+We first soft-masked the genome using tantan version 51. Then we aligned RNA-seq data to the genome using HISAT2 version 2.2.1. The RNA-seq data were filtered the same way as [1.1](#11---quality-control). Then we used BRAKER to annotate the genome based on both RNA-seq evidence and protein evidence of related aphid species (proteins_NCBI_GCF_aphids_v20210211_noStopCodon.fasta file in the step2 folder).
+```
+tantan genome.fa -f 0 > genome.masked.fa
+
+hisat2-build genome.masked.fa genome.masked.fa
+hisat2 -x genome.masked.fa -1 pe.1.fq.gz -2 pe.2.fq.gz -U se.1.fq.gz,se.2.fq.gz -S combined.sam --phred33 -t --threads 20
+
+singularity exec ~/bin/braker/BRAKER-3/braker3.sif braker.pl --genome=genome.masked.fa \
+	--bam=combined.sorted.bam \
+	--prot_seq=proteins_NCBI_GCF_aphids_v20210211_noStopCodon.fasta \
+	--softmasking \
+	--threads 20 \
+	--workingdir=braker3_output \
+	--species DBDThap1_tantan \
+	--gff3 \
+	--busco_lineage=hemiptera_odb10
+```
+
 
 ### 2.5 - Improving the B chromosome assembly
 To 
