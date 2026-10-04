@@ -213,6 +213,40 @@ singularity exec ~/bin/braker/BRAKER-3/braker3.sif braker.pl --genome=genome.mas
 	--busco_lineage=hemiptera_odb10
 ```
 
+We then renamed the genes so that their gene IDs increased according to their order along the chromosomes.  
+```
+perl ./step2/length_distribution_V1.5.pl genome.masked.fa
+
+# sort by scaffold
+
+perl ./step2/sort_gtf_by_scaffold_ids.v0.9.pl braker.gtf genome.masked.fa.length braker.sorted.gtf
+perl ./step2/rename_gtf_by_scaffold_order.pl braker.sorted.gtf braker.renamed.gtf
+
+### testing for sort order
+## le braker.sorted.gtf | awk '$3 == "gene"' | sort -k1,1 -k4,4n > test.gene.order.sort
+## le braker.sorted.gtf | awk '$3 == "gene"' > test.gene.order
+###
+
+# GTF to GFF
+conda activate braker_v20210330_mamba
+gtf2gff.pl < braker.renamed.gtf --gff3 --out braker.renamed.gff3
+
+# add scaf names to genes
+less -S braker.renamed.gff3 | perl -ne '@a=split; s/ID\=/ID\=$a[0]\_/; s/Parent\=/Parent\=$a[0]\_/; print; ' > braker_hap_named.gff3
+
+# gff to cds
+perl ./step2/BGI_gff2fasta_v20210401_AUGUSTUS_numerical.pl braker_hap_named.gff3 genome.masked.fa braker.cds.fa
+
+# cds to pep
+perl ./step2/cds2aa_stopCodonInAsterisks.pl braker.cds.fa NUC braker.pep.fa
+
+# remove stop codons
+perl ./step2/remove_genes_with_stop_codons.pl braker.pep.fa braker.pep.noStop.fa
+
+# longest isoform
+perl ./step2/find_longest_protein_Braker_v20210403b.braker.pl braker.pep.noStop.fa braker.pep.noStop.fa.longest
+```
+
 
 ### 2.5 - Improving the B chromosome assembly
 To 
