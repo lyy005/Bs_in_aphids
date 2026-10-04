@@ -17,6 +17,7 @@ Photos of the sumac galls induced by these aphids. Scale bar represents 1 cm.
   - [2.2 - Genome assembly using hifiasm](#22---genome-assembly-using-hifiasm)
   - [2.3 - Scaffolding using HiC data](#23---scaffolding-using-hic-data)
   - [2.4 - Manual curation](#24---manual-curation)
+  - [2.5 - Annotation](#25---annotation)
 
 ## 1 - Mitochondrial genome assembly and species identification
 ### 1.1 - Quality control
