@@ -209,24 +209,19 @@ singularity exec ~/bin/braker/BRAKER-3/braker3.sif braker.pl --genome=genome.mas
 	--softmasking \
 	--threads 20 \
 	--workingdir=braker3_output \
-	--species DBDThap1_tantan \
+	--species example \
 	--gff3 \
 	--busco_lineage=hemiptera_odb10
 ```
 
-We then renamed the genes so that their gene IDs increased according to their order along the chromosomes.  
+We then renamed the genes so their IDs increased in order along the chromosomes.  
 ```
 perl ./step2/length_distribution_V1.5.pl genome.masked.fa
 
 # sort by scaffold
-
 perl ./step2/sort_gtf_by_scaffold_ids.v0.9.pl braker.gtf genome.masked.fa.length braker.sorted.gtf
 perl ./step2/rename_gtf_by_scaffold_order.pl braker.sorted.gtf braker.renamed.gtf
 
-### testing for sort order
-## le braker.sorted.gtf | awk '$3 == "gene"' | sort -k1,1 -k4,4n > test.gene.order.sort
-## le braker.sorted.gtf | awk '$3 == "gene"' > test.gene.order
-###
 
 # GTF to GFF
 conda activate braker_v20210330_mamba
