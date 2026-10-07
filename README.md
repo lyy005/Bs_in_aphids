@@ -243,22 +243,20 @@ perl ./step2/remove_genes_with_stop_codons.pl braker.pep.fa braker.pep.noStop.fa
 perl ./step2/find_longest_protein_Braker_v20210403b.braker.pl braker.pep.noStop.fa braker.pep.noStop.fa.longest
 ```
 
+## 3 - Assigning X chromosomes
+Aphids have the XO sex determination system, where females possess two copies of the X chromosomes, whereas males possess one copy of the X. Therefore, we assigned X chromosomes in the genome assembly by estimating the sequencing depth of each chromosome using whole-genome sequencing data from males and females of *K. r. ovogallis*. As the X chromosomes were conserved in aphids (Li et al. 2020; Mathers et al. 2021; Li et al. 2023), we assigned the X chromosomes of other sumac gall aphid species based on the genome synteny with *K. r. ovogallis*. 
 
-### 2.5 - Improving the B chromosome assembly
-To 
+### 3.1 - Identifying Xs based on the genome synteny with *K. r. ovogallis*
+TBD
 
-### 1.1 - Identifying autosomes and Xs based on the genome of *Schlechtendalia chinensis*
-We first aligned hifiasm results to the top 13 scaffolds (chromosomes) of *Schlechtendalia chinensis* using LAST. Then we picked the top scaffolds that matched the chromosomes of *Schlechtendalia chinensis*
+### 3.2 - Identifying Xs based on the genome synteny with *K. r. ovogallis*
+We aligned assemblies to the genome of *K. r. ovogallis* using LAST. 
+
 ```
 conda activate last_v1648
 
 # ref: https://github.com/aaannaw/Myospalax-CFi/blob/main/CFi_identification/Ancestral_karyotype_reconstruction.sh
 # ref: https://gitlab.com/mcfrith/last/-/blob/1648/doc/last-cookbook.rst
-
-# human and chimp example (for example, s5h1 vs s1 and s5h1 vs s10h1 )
-#lastdb -P10 -c -U400 -uRY128 ref_db ref.fa
-#last-train -P10 --revsym -C2 ref_db q.fa > hc.train
-#lastal -P10 -D1e9 -C2 --split-f=MAF+ -p hc.train ref_db q.fa | last-split -r | maf-linked - > aln.maf
 
 # Aligning more distantly related genomes (for example, s5h1 vs s6h1)
 lastdb -P10 -c ref_db ref.fa
@@ -271,6 +269,13 @@ last-dotplot aln.maf aln.maf.png --rot1=v --rot2=h
 
 The resulting dotplot looks like this:
 <img width="527" height="1000" alt="aln maf" src="https://github.com/user-attachments/assets/d03513a8-0e4c-46ca-a581-951b75c86fa1" />
+
+
+## 4 - Improving the B chromosome assembly
+To 
+
+
+
 
 
 #### Identify Xs based on resequencing data
