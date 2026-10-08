@@ -250,25 +250,44 @@ Aphids have the XO sex determination system, where females possess two copies of
 TBD
 
 ### 3.2 - Identifying Xs based on the genome synteny with *K. r. ovogallis*
-We aligned assemblies to the genome of *K. r. ovogallis* using LAST. 
+We aligned assemblies to the genome of *K. r. ovogallis* using minimap2 version 2.28 and visualized using Asynt (https://github.com/simonhmartin/asynt). 
 
 ```
-conda activate last_v1648
+~/bin/minimap2-2.28_x64-linux/minimap2 -x asm20 -t 10 q.fa ref.fa | gzip > q_ref.paf.gz
 
-# ref: https://github.com/aaannaw/Myospalax-CFi/blob/main/CFi_identification/Ancestral_karyotype_reconstruction.sh
-# ref: https://gitlab.com/mcfrith/last/-/blob/1648/doc/last-cookbook.rst
+samtools faidx q.fa
+samtools faidx ref.fa
 
-# Aligning more distantly related genomes (for example, s5h1 vs s6h1)
-lastdb -P10 -c ref_db ref.fa
-last-train -P10 --revsym -C2 ref_db q.fa > hl.train
-lastal -P10 -m2 -D1e9 -C2 --split-f=MAF+ -p hl.train ref_db q.fa | last-split -r | maf-linked - > aln.maf
 
-conda activate last_v1542
-last-dotplot aln.maf aln.maf.png --rot1=v --rot2=h
+# we combined the two fai files and made a chr file so we could keep the order of chromosomes in the visualization step
+cat q.fa.fai ref.fa.fai > q_ref.fa.fai
+cat q_ref.fa.fai | perl -ne '@a=split; print "$a[0]\t$a[0]\t+\n";  '> q_ref_chr.txt 
+
+```
+
+In RStudio, we visualized the syntenies:
+```
+source("~/bin/asynt-master/asynt.R")
+
+# load the output from minimap2
+alignments <- import.paf("q_ref.paf.gz")
+
+ref_data <- import.genome(fai_file="q_ref.fa.fai", chrom_file = "q_ref_chr.txt")
+query_data <- import.genome(fai_file="q_ref.fa.fai", chrom_file = "q_ref_chr.txt")
+
+# Remove short alignments
+alignments_10kb <- subset(alignments, Rlen >= 10000 & Qlen >= 10000)
+
+pdf("q_ref.pdf", width = 10, height = 10, useDingbats = FALSE) # Open a new pdf file
+par(mar=c(1.5,1.5,0,0), xpd=NA)
+plot.alignments.diagonal(alignments_10kb, reference_lens=ref_data$seq_len, query_lens=query_data$seq_len, reference_ori=ref_data$seq_ori, query_ori = query_data$seq_ori, no_reverse=FALSE, no_reorder=TRUE)
+dev.off() # Close the file
+
 ```
 
 The resulting dotplot looks like this:
-<img width="527" height="1000" alt="aln maf" src="https://github.com/user-attachments/assets/d03513a8-0e4c-46ca-a581-951b75c86fa1" />
+<img width="1780" height="1770" alt="image" src="https://github.com/user-attachments/assets/dd2775f6-1916-45c8-8782-6349a8fd67d5" />
+
 
 
 ## 4 - Improving the B chromosome assembly
