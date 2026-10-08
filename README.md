@@ -20,7 +20,7 @@ Photos of the sumac galls induced by these aphids. Scale bar represents 1 cm.
   - [2.5 - Annotation](#25---annotation)
 - [3 - Assigning X chromosomes](#3---assigning-x-chromosomes)
   - [3.1 - Identifying Xs of *K. r. ovogallis* based on the sequencing depth of males and females](#31---identifying-xs-of-k-r-ovogallis-based-on-the-sequencing-depth-of-males-and-females)
-  - [3.2 - Identifying Xs based on the genome synteny with *K. r. ovogallis*](#32---identifying-xs-based-on-the-genome-synteny-with-k-r-ovogallis)
+  - [3.2 - Identifying Xs of other species based on the genome synteny with *K. r. ovogallis*](#32---identifying-xs-based-on-the-genome-synteny-with-k-r-ovogallis)
 
 ## 1 - Mitochondrial genome assembly and species identification
 ### 1.1 - Quality control
@@ -318,8 +318,6 @@ depth_AB$chr = factor(depth_AB$chr, levels = c("A", "X",
                                            "B2_s5h1_15B", "B2_s5h1_16B", "B2_s5h1_17B",
                                            "B2_s5h1_18B"))
 
-head(depth_AB)
-tail(depth_AB)
 
 ggplot(depth_AB, aes(x = chr, y = V4, fill = V5)) +
   geom_boxplot(
@@ -342,7 +340,7 @@ ggplot(depth_AB, aes(x = chr, y = V4, fill = V5)) +
     #axis.ticks.x = element_blank()
   )
 ```
-### 3.2 - Identifying Xs based on the genome synteny with *K. r. ovogallis*
+### 3.2 - Identifying Xs of other species based on the genome synteny with *K. r. ovogallis*
 We aligned assemblies to the genome of *K. r. ovogallis* using minimap2 version 2.28 and visualized using Asynt (https://github.com/simonhmartin/asynt). 
 
 ```
