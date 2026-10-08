@@ -18,6 +18,9 @@ Photos of the sumac galls induced by these aphids. Scale bar represents 1 cm.
   - [2.3 - Scaffolding using HiC data](#23---scaffolding-using-hic-data)
   - [2.4 - Manual curation](#24---manual-curation)
   - [2.5 - Annotation](#25---annotation)
+- [3 - Assigning X chromosomes](#3---assigning-x-chromosomes)
+  - [3.1 - Identifying Xs based on the genome synteny with *K. r. ovogallis*](#31---identifying-xs-based-on-the-genome-synteny-with-k-r-ovogallis)
+  - [3.2 - Annotation](#32---identifying-xs-based-on-the-genome-synteny-with-k-r-ovogallis)
 
 ## 1 - Mitochondrial genome assembly and species identification
 ### 1.1 - Quality control
