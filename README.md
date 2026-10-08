@@ -250,8 +250,98 @@ perl ./step2/find_longest_protein_Braker_v20210403b.braker.pl braker.pep.noStop.
 Aphids have the XO sex determination system, where females possess two copies of the X chromosomes, whereas males possess one copy of the X. Therefore, we assigned X chromosomes in the genome assembly by estimating the sequencing depth of each chromosome using whole-genome sequencing data from males and females of *K. r. ovogallis*. As the X chromosomes were conserved in aphids (Li et al. 2020; Mathers et al. 2021; Li et al. 2023), we assigned the X chromosomes of other sumac gall aphid species based on the genome synteny with *K. r. ovogallis*. 
 
 ### 3.1 - Identifying Xs based on the genome synteny with *K. r. ovogallis*
-TBD
+We aligned reads from male and female *K. r. ovogallis* individuals to the reference genome. Chromosomes exhibiting half the sequencing depth in males compared with females were identified as X chromosomes. We then numbered the chromosomes in descending order of length. All sumac gall aphids have 10 autosomes (1 to 10) and 3 Xs (X1 to X3). 
 
+```
+~/bin/bwa_v0.7.19/bwa index genome.fa
+~/bin/bwa_v0.7.19/bwa mem -t 20 -o genome.sam ../../references/s5h1_plus_allBcomps.fa pe.1.fq.gz pe.2.fq.gz
+
+samtools view -h -b -S genome.sam -o genome.bam --threads 20
+samtools sort genome.bam -o genome.sorted.bam --threads 20
+samtools index genome.sorted.bam
+rm genome.sam genome.bam
+
+# estimating the sequencing depth using mosdepth version 0.3.8
+## first, we made sliding windows of 100kb and 50kb for each step
+perl ./step2/length_distribution_V1.5.pl genome.fa
+cut -f 1,2 genome.fa.length > genomeFile.txt
+~/bin/bedtools_v2.31.0 makewindows -g genomeFile.txt -w 100000 -s 50000 > windows.bed
+
+## then we estimated the sequencing depth of each window
+mosdepth -b windows.bed -f genome.fa -n -t 20 --mapq 0 window_mapq0 genome.sorted.bam
+mosdepth -b windows.bed -f genome.fa -n -t 20 --mapq 1 window_mapq1 genome.sorted.bam
+
+# we also calculated the mapping rates
+conda activate ~/miniconda3/envs/samtools_v1.15.1
+## unmapped
+echo "unmapped"
+samtools view -c -f 4 --threads 10 genome.sorted.bam
+
+## mapped & primary
+echo "mapped"
+samtools view -c -F 0x904 --threads 10 genome.sorted.bam
+```
+
+We plotted the distribution of sequencing depth in RStudio
+```
+depth_mapq0 <- read.table('window_mapq0.regions.bed.gz', header = F)
+depth_mapq1 <- read.table('window_mapq1.regions.bed.gz', header = F)
+
+depth_mapq0$V5 = "mapq0"
+depth_mapq1$V5 = "mapq1"
+
+depth <- rbind(depth_mapq0, depth_mapq1)
+
+idx <- depth$V1 %in% names(key)
+depth$V1[idx] <- key[depth$V1[idx]]
+
+head(depth)
+tail(depth)
+
+#### boxplot - pick positive Bs and all As ####
+depth_AB <- depth %>%
+  mutate(
+    chr = case_when(
+      grepl("X", V1)      ~ "X",
+      grepl("B$", V1)     ~ V1,
+      TRUE                ~ "A"
+    )
+  )
+
+depth_AB <- subset(depth_AB, chr %in% c("A", "X",
+                                           "B1_s5h1_14B", "B1_s4_14B", 
+                                           "B2_s5h1_15B", "B2_s5h1_16B", "B2_s5h1_17B",
+                                           "B2_s5h1_18B"))
+
+depth_AB$chr = factor(depth_AB$chr, levels = c("A", "X",
+                                           "B1_s5h1_14B", "B1_s4_14B", 
+                                           "B2_s5h1_15B", "B2_s5h1_16B", "B2_s5h1_17B",
+                                           "B2_s5h1_18B"))
+
+head(depth_AB)
+tail(depth_AB)
+
+ggplot(depth_AB, aes(x = chr, y = V4, fill = V5)) +
+  geom_boxplot(
+    position = position_dodge(width = 0.8),
+    width = 0.5,
+    outlier.shape = NA
+  ) + 
+  coord_cartesian(ylim = c(0, 200)) + 
+  scale_y_continuous(breaks = seq(0, 200, 50)) + # , expand = c(0, 0)
+  theme_bw() +
+  xlab("") +
+  ylab("Depth") +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    #legend.title = element_blank(),
+    #legend.position = "none",
+    axis.title.x = element_blank(),
+    axis.title.y = element_blank(),
+    #axis.text.x  = element_blank(),
+    #axis.ticks.x = element_blank()
+  )
+```
 ### 3.2 - Identifying Xs based on the genome synteny with *K. r. ovogallis*
 We aligned assemblies to the genome of *K. r. ovogallis* using minimap2 version 2.28 and visualized using Asynt (https://github.com/simonhmartin/asynt). 
 
