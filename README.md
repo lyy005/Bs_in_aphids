@@ -20,7 +20,7 @@ Photos of the sumac galls induced by these aphids. Scale bar represents 1 cm.
   - [2.5 - Annotation](#25---annotation)
 - [3 - Assigning X chromosomes](#3---assigning-x-chromosomes)
   - [3.1 - Identifying Xs of *K. r. ovogallis* based on the sequencing depth of males and females](#31---identifying-xs-of-k-r-ovogallis-based-on-the-sequencing-depth-of-males-and-females)
-  - [3.2 - Identifying Xs of other species based on the genome synteny with *K. r. ovogallis*](#32---identifying-xs-based-on-the-genome-synteny-with-k-r-ovogallis)
+  - [3.2 - Identifying Xs of other species based on the genome synteny with *K. r. ovogallis*](#32---identifying-xs-of-other-species-based-on-the-genome-synteny-with-k-r-ovogallis)
 
 ## 1 - Mitochondrial genome assembly and species identification
 ### 1.1 - Quality control
