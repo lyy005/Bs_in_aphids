@@ -422,6 +422,13 @@ conda activate barrnap
 barrnap --quiet genome.fa --kingdom euk
 ```
 
+### 3.4 - Transposable element annotation
+To understand the distribution of transposable elements, we annotated transposable elements using Earl Grey version 6.3.0 (https://github.com/TobyBaril/EarlGrey). 
+
+```
+
+```
+
 
 ## 4 - Improving the B chromosome assembly
 To 
