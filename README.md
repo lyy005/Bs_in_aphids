@@ -197,7 +197,7 @@ We ran the CurationPretext pipeline:
 nextflow run ~/bin/curationpretext/v1.6.1 -profile singularity -params-file params.yaml
 ```
 
-### 2.5 - Annotation
+### 2.5 - Gene annotation
 To annotate genes, we followed the annotation pipeline of BRAKER version 3.0.8. 
 We first soft-masked the genome using tantan version 51. Then we aligned RNA-seq data to the genome using HISAT2 version 2.2.1. The RNA-seq data were filtered the same way as [1.1](#11---quality-control). Then we used BRAKER to annotate the genome based on both RNA-seq evidence and protein evidence of related aphid species (proteins_NCBI_GCF_aphids_v20210211_noStopCodon.fasta file in the step2 folder).
 ```
@@ -380,6 +380,47 @@ The resulting dotplot looks like this:
 <img width="1780" height="1770" alt="image" src="https://github.com/user-attachments/assets/dd2775f6-1916-45c8-8782-6349a8fd67d5" />
 
 
+### 3.3 - Telomere and rDNA annotation
+To assess the completeness of assembled chromosomes, we annotated telomeric sequences using two approaches: seqtk version 1.4 (https://github.com/lh3/seqtk) and telomere version 0.0.4 (https://github.com/sanger-tol/telomere). 
+
+seqtk searches telomeres are the very end of each scaffold:
+```
+# search for telomeres at ends of each scaffold
+conda activate seqtk_v1.4-r122
+seqtk telo -m CCTAA genome.fa > genome.fa.telo
+
+# calculate the length of the assembly
+perl ./step2/length_distribution_V1.5.pl genome.fa
+
+# summarize the location of telomeres to a table
+perl ./step3/summarize_telomere.v0.92.pl genome.fa.telo genome.fa.length genome.fa.telo.summary
+```
+
+telomere searches the percentage of telomeres in sliding windows across the genome.
+```
+~/bin/telomere-0.0.4/find_telomere genome.fa TTAGG > genome.telomere
+cat genome.telomere | awk '{print $1"\t"$(NF-4)"\t"$(NF-3)"\t"$(NF-2)"\t"$(NF-1)"\t"$NF}' - > genome.telomere.reform
+sdust genome.fa > genome.sdust
+
+java -cp ~/bin/telomere-0.0.4/telomere.jar SizeFasta genome.fa > genome.lens 
+
+# FindTelomereWindows writes prefix.telomere.bed and prefix.windows
+# (and with --split also fwd/rev beds + fwd/rev windows).
+# Lowering threshold to 0.10 (10%) from the initial 0.40 (40%)
+java -cp ~/bin/telomere-0.0.4/telomere.jar FindTelomereWindows genome.telomere 99.9 0.1
+java -cp ~/bin/telomere-0.0.4/telomere.jar FindTelomereBreaks genome.lens genome.sdust genome.telomere > genome.breaks
+
+# check the percentage of telomeres in each window
+less -S genome.windows | sort -V -k1,1 -k2,2n | less -S
+```
+
+Aphid ribosomal DNA arrays are located on the X chromosome (Blackman and Spence 1996). To locate the rDNA arrays in aphids with multiple Xs, we annotated the rDNAs using barrnap (https://github.com/tseemann/barrnap). 
+
+```
+conda activate barrnap
+barrnap --quiet genome.fa --kingdom euk
+```
+
 
 ## 4 - Improving the B chromosome assembly
 To 
@@ -419,21 +460,7 @@ verkko -d run1_asm --hifi hifi.filt.fastq.gz --telomere-motif CCTAA
 ```
 
 ## 2 - Assessing the completeness of the genome and Bs
-To assess the completeness of the genome and the Bs, we checked the completeness of telomeres. We used two approaches: 
 
-### 2.1 - seqtk
-seqtk searches telomeres are the very end of each scaffold:
-```
-# search for telomeres at ends of each scaffolds
-conda activate seqtk_v1.4-r122
-seqtk telo -m CCTAA genome.fa > genome.fa.telo
-
-# calculate the length of the assembly
-perl ./step1_assembly/length_distribution_V1.5.pl genome.fa
-
-# summarize the location of telomeres to a table
-perl ./step1_assembly/summarize_telomere.v0.92.pl genome.fa.telo genome.fa.length genome.fa.telo.summary
-```
 ### 2.2 - TRF
 On top of telomeres found by seqtk, TRF also searches for telomeres in the middle or close to the end of each scaffold:
 ```
@@ -444,12 +471,7 @@ trf genome.fa 2 7 7 80 10 50 500 -f -d -m
 ## 3 - Characterize Bs in aphids
 We also characterized other features of the genomes and the Bs
 
-### 3.1 - Annotation of ribosomal RNAs
-We used barrnap (https://github.com/tseemann/barrnap) to annotated rRNAs. 
-```
-conda activate barrnap
-barrnap --quiet s5h1.fa --kingdom euk
-```
+
 
 ### 3.2 - Annotation of repeats
 To annotate repetitive content, we used EarlGrey. 
