@@ -23,6 +23,10 @@ Photos of the sumac galls induced by these aphids. Scale bar represents 1 cm.
   - [3.2 - Identifying Xs of other species based on the genome synteny with *K. r. ovogallis*](#32---identifying-xs-of-other-species-based-on-the-genome-synteny-with-k-r-ovogallis)
   - [3.3 - Telomere and rDNA annotation](#33---telomere-and-rdna-annotation)
   - [3.4 - Transposable element annotation](#34---transposable-element-annotation)
+- [4 - Phylogeny reconstruction]
+  - [4.1 - OrthoFinder]
+  - [4.2 - IQ-Tree]
+- [5 - MCScanX]
 
 ## 1 - Mitochondrial genome assembly and species identification
 ### 1.1 - Quality control
@@ -431,7 +435,7 @@ To understand the distribution of transposable elements, we annotated transposab
 earlGrey -g kaburagiaRhusicola.fa -s kaburagiaRhusicola -r arthropoda -o output -t 20 -c yes -e yes -d yes
 
 # Secondly, we renamed the elements by species names, so that we know which species the element was found in. For example:
-perl ./step3/add_spp_name.pl s1\.strained s1 s1\.renamed.strained
+perl ./step3/add_spp_name.pl s1.strained s1 s1.renamed.strained
 
 # To ensure consistent annotation across genomes, we then combined and clustered the de novo curated elements using mmseqs version 18. 
 # This method was suggested by Earl Grey: https://github.com/TobyBaril/EarlGrey/issues/216
@@ -444,8 +448,26 @@ earlGreyAnnotationOnly -g kaburagiaRhusicola.fa -s kaburagiaRhusicola -o output 
 
 ```
 
+## 5 - Phylogeny reconstruction
+### 5.1 - Ortholog inference
+To understand the phylogenetic relationships of sumac gall aphids, we reconstructed the phylogeny using our species and 34 published aphid genomes (Table S2), including 1 species of Phylloxeridae (Family), 3 species of Adelgidae (Family), and 30 species of Aphididae (Family). We also used 11 Hemiptera species as outgroups, covering 3 species of Heteroptera (Suborder), 3 species of Auchenorrhyncha (Suborder), and 5 species of Sternorrhyncha (Suborder).
 
-## 4 - Improving the B chromosome assembly
+We first picked the longest isoform of each gene, then used OrthoFinder version 3.1.0 to identify orthologous groups. The amino acid sequences used can be found on Zenodo TBD.
+```
+orthofinder -f ./ -t 40 -a 5
+```
+### 5.2 - Phylogenetic tree construction
+We used MAFFT version 7.526 with the L-INS-i algorithm to align amino acid sequences and Gblocks version 0.91b to remove regions that were not well aligned. Lastly, we concatenated the resulting alignments and constructed phylogenetic trees using IQ-Tree version 3.0.1 
+
+```
+mafft-linsi gene.fa 1> gene.fa.align 2> gene.fa.align.log
+Gblocks gene.fa.align -t=p -b4=10 -b5=n -e=-gb
+perl gblock_convert.pl gene.fa.align-gb > gene.GBlocks.fas
+
+# iqtree
+iqtree3 -s Orthogroups.GeneCount.tsv.0.80.concate.fasta -B 1000 -T 10 -o Beta,Dici,Pave,Trru,Rhpr,Onfa,Nilu,Sofu,Last,Erpe,Phso -redo
+```
+## 5 - Improving the B chromosome assembly
 To 
 
 
