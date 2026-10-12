@@ -426,6 +426,20 @@ barrnap --quiet genome.fa --kingdom euk
 To understand the distribution of transposable elements, we annotated transposable elements using Earl Grey version 6.3.0 (https://github.com/TobyBaril/EarlGrey). 
 
 ```
+# First, we annotated each genome using Earl Grey
+earlGrey -g kaburagiaRhusicola.fa -s kaburagiaRhusicola -r arthropoda -o output -t 20 -c yes -e yes -d yes
+
+# Secondly, we renamed the elements by species names, so that we know which species the element was found in. For example:
+perl ./step3/add_spp_name.pl s1\.strained s1 s1\.renamed.strained
+
+# To ensure consistent annotation across genomes, we then combined and clustered the de novo curated elements using mmseqs version 18. 
+# This method was suggested by Earl Grey: https://github.com/TobyBaril/EarlGrey/issues/216
+
+cat *.renamed.strained > combined.renamed.strained
+mmseqs easy-cluster combined.renamed.strained combined.renamed.strained.easyCluster tmp --min-seq-id 0.8 -c 0.8 --cov-mode 1 -v 2 --threads 10 --cluster-reassign
+
+# Lastly, we annotated all the genomes using this library
+earlGreyAnnotationOnly -g kaburagiaRhusicola.fa -s kaburagiaRhusicola -o output -t 20 -l combined.renamed.strained.easyCluster_rep_seq.fasta
 
 ```
 
