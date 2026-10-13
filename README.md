@@ -1,4 +1,4 @@
-# Bs_in_aphids
+<img width="468" height="25" alt="image" src="https://github.com/user-attachments/assets/cee3980f-ee08-47f0-80a5-5b00b73a2fdb" /># Bs_in_aphids
 Pipeline for identifying supernumerary B chromosomes in sumac gall aphids
 
 Photos of the sumac galls induced by these aphids. Scale bar represents 1 cm. 
@@ -251,11 +251,14 @@ perl ./step2/remove_genes_with_stop_codons.pl braker.pep.fa braker.pep.noStop.fa
 # longest isoform
 perl ./step2/find_longest_protein_Braker_v20210403b.braker.pl braker.pep.noStop.fa braker.pep.noStop.fa.longest
 ```
-
-## 3 - Assigning X chromosomes
+### 2.6 - BUSCO assessment
+TBD
+```
+```
+## 3 - Quality assessment of the genome assembly
 Aphids have the XO sex determination system, where females possess two copies of the X chromosomes, whereas males possess one copy of the X. Therefore, we assigned X chromosomes in the genome assembly by estimating the sequencing depth of each chromosome using whole-genome sequencing data from males and females of *K. r. ovogallis*. As the X chromosomes were conserved in aphids (Li et al. 2020; Mathers et al. 2021; Li et al. 2023), we assigned the X chromosomes of other sumac gall aphid species based on the genome synteny with *K. r. ovogallis*. 
 
-### 3.1 - Identifying Xs of *K. r. ovogallis* based on the sequencing depth of males and females
+### 3.1 - Assigning X chromosomes of *K. r. ovogallis* based on the sequencing depth of males and females
 We aligned reads from male and female *K. r. ovogallis* individuals to the reference genome. Chromosomes exhibiting half the sequencing depth in males compared with females were identified as X chromosomes. We then numbered the chromosomes in descending order of length. All sumac gall aphids have 10 autosomes (1 to 10) and 3 Xs (X1 to X3). 
 
 ```
@@ -346,7 +349,7 @@ ggplot(depth_AB, aes(x = chr, y = V4, fill = V5)) +
     #axis.ticks.x = element_blank()
   )
 ```
-### 3.2 - Identifying Xs of other species based on the genome synteny with *K. r. ovogallis*
+### 3.2 - Assigning X chromosomes of other species based on the genome synteny with *K. r. ovogallis*
 We aligned assemblies to the genome of *K. r. ovogallis* using minimap2 version 2.28 and visualized using Asynt (https://github.com/simonhmartin/asynt). 
 
 ```
@@ -448,15 +451,15 @@ earlGreyAnnotationOnly -g kaburagiaRhusicola.fa -s kaburagiaRhusicola -o output 
 
 ```
 
-## 5 - Phylogeny reconstruction
-### 5.1 - Ortholog inference
+## 4 - Phylogeny reconstruction
+### 4.1 - Ortholog inference
 To understand the phylogenetic relationships of sumac gall aphids, we reconstructed the phylogeny using our species and 34 published aphid genomes (Table S2), including 1 species of Phylloxeridae (Family), 3 species of Adelgidae (Family), and 30 species of Aphididae (Family). We also used 11 Hemiptera species as outgroups, covering 3 species of Heteroptera (Suborder), 3 species of Auchenorrhyncha (Suborder), and 5 species of Sternorrhyncha (Suborder).
 
 We first picked the longest isoform of each gene, then used OrthoFinder version 3.1.0 to identify orthologous groups. The amino acid sequences used can be found on Zenodo TBD.
 ```
 orthofinder -f ./ -t 40 -a 5
 ```
-### 5.2 - Phylogenetic tree construction
+### 4.2 - Phylogenetic tree construction
 We used MAFFT version 7.526 with the L-INS-i algorithm to align amino acid sequences and Gblocks version 0.91b to remove regions that were not well aligned. Lastly, we concatenated the resulting alignments and constructed phylogenetic trees using IQ-Tree version 3.0.1 
 
 ```
@@ -467,6 +470,16 @@ perl gblock_convert.pl gene.fa.align-gb > gene.GBlocks.fas
 # iqtree
 iqtree3 -s Orthogroups.GeneCount.tsv.0.80.concate.fasta -B 1000 -T 10 -o Beta,Dici,Pave,Trru,Rhpr,Onfa,Nilu,Sofu,Last,Erpe,Phso -redo
 ```
+
+### 4.3 - Divergence time estimation
+To estimate the divergence time, we used r8s version 1.81 with the penalized likelihood method and the TN algorithm based on fossil calibration points from Johnson et al. (2018).
+
+```
+r8s -b -f r8s_ctl_file.modified.txt > r8s_tmp.txt
+tail -n 1 r8s_tmp.txt | cut -c 16- > aphid_tree.txt
+```
+
+
 ## 5 - Improving the B chromosome assembly
 To 
 
