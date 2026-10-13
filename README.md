@@ -473,10 +473,22 @@ iqtree3 -s Orthogroups.GeneCount.tsv.0.80.concate.fasta -B 1000 -T 10 -o Beta,Di
 ```
 
 ### 4.3 - Divergence time estimation
-To estimate the divergence time, we used r8s version 1.81 with the penalized likelihood method and the TN algorithm based on fossil calibration points from Johnson et al. (2018).
+To estimate the divergence time, we used r8s version 1.81 with the penalized likelihood method and the TN algorithm based on fossil calibration points from Mathers et al. 2021 Molecular Biology and Evolution. 
 
+In our case: 
 ```
-r8s -b -f r8s_ctl_file.modified.txt > r8s_tmp.txt
+mrca Reduviidae Trru Rhpr Onfa;
+mrca AucHet Trin Rhpr Onfa Nilu Sofu Last;
+mrca Sternorryncha Beta Dici Pave Erpe Phso Acpi AcJI Adab Adts Adco Apfa Apgo ApJI Brbr Chov Cice Drpl Davi Erla Hoco Maal Mecr Mesa Mype MyG6 Nefo Peni Peac Phhu Psba Rhma Rhpa Sehe Siav Simi Slle Teni Thtr Tusa s1 s10h1 s10h2 s11h1 s6h1 s6h2 s11h2 s3h1 s3h2 s4 s5h2 s5h1;
+mrca Hemiptera Beta Dici Pave Erpe Phso Acpi AcJI Adab Adts Adco Apfa Apgo ApJI Brbr Chov Cice Drpl Davi Erla Hoco Maal Mecr Mesa Mype MyG6 Nefo Peni Peac Phhu Psba Rhma Rhpa Sehe Siav Simi Slle Teni Thtr Tusa s1 s10h1 s10h2 s11h1 s6h1 s6h2 s11h2 s3h1 s3h2 s4 s5h2 s5h1 Trin Rhpr Onfa Nilu Sofu Last;
+fixage taxon=Reduviidae age=250;
+fixage taxon=AucHet age=362;
+fixage taxon=Sternorryncha age=356;
+fixage taxon=Hemiptera age=386;
+```
+To run r8s, we used: 
+```
+r8s -b -f ./step4/r8s_ctl_file.modified.txt > r8s_tmp.txt
 tail -n 1 r8s_tmp.txt | cut -c 16- > aphid_tree.txt
 ```
 
