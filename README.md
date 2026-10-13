@@ -18,7 +18,7 @@ Photos of the sumac galls induced by these aphids. Scale bar represents 1 cm.
   - [2.3 - Scaffolding using HiC data](#23---scaffolding-using-hic-data)
   - [2.4 - Manual curation](#24---manual-curation)
   - [2.5 - Annotation](#25---gene-annotation)
-- [3 - Assigning X chromosomes](#3---assigning-x-chromosomes)
+- [3 - Quality assessment of the genome assembly](#3---quality-assessment-of-the-genome-assembly)
   - [3.1 - Identifying Xs of *K. r. ovogallis* based on the sequencing depth of males and females](#31---identifying-xs-of-k-r-ovogallis-based-on-the-sequencing-depth-of-males-and-females)
   - [3.2 - Identifying Xs of other species based on the genome synteny with *K. r. ovogallis*](#32---identifying-xs-of-other-species-based-on-the-genome-synteny-with-k-r-ovogallis)
   - [3.3 - Telomere and rDNA annotation](#33---telomere-and-rdna-annotation)
@@ -31,7 +31,7 @@ Photos of the sumac galls induced by these aphids. Scale bar represents 1 cm.
 
 ## 1 - Mitochondrial genome assembly and species identification
 ### 1.1 - Quality control
-We first removed low-quality base pairs and sequencing adapters using Trimmomatic. The combined_MGI.fa file is a combination of Illumina and MGI sequencing adapters. We used the same parameters for other sequencing library quality controls. 
+We first removed low-quality bases and sequencing adapters using Trimmomatic. The combined_MGI.fa file combines Illumina and MGI sequencing adapters. We used the same parameters for quality control of other sequencing libraries. 
 ```
 java -jar ~/bin/Trimmomatic-0.39/trimmomatic-0.39.jar PE -phred33 combined.1.fq.gz combined.2.fq.gz \
           pe.1.fq.gz se.1.fq.gz pe.2.fq.gz se.2.fq.gz \
