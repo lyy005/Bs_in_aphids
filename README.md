@@ -492,6 +492,41 @@ r8s -b -f ./step4/r8s_ctl_file.modified.txt > r8s_tmp.txt
 tail -n 1 r8s_tmp.txt | cut -c 16- > aphid_tree.txt
 ```
 
+## 5 - Chromosomal rearrangement rate estimation
+To quantitatively estimate chromosomal rearrangement rates, we calculated the amount of chromosomal rearrangements normalized by divergence time (per million years). 
+
+### 5.1 - Divergence time between species pairs
+To calculate the rearrangement rates between pairs of species, we first estimated the divergence time between pairs of species. We used R to extract the divergence time from the time tree from r8s. 
+
+```
+# ref: https://rdrr.io/cran/ape/man/cophenetic.phylo.html
+# ref: https://blog.phytools.org/2013/10/finding-edge-lengths-of-all-terminal.html
+
+library(ape)
+library(phytools)
+library(reshape)
+library(ggplot2)
+library(gridExtra)
+library(ggtree)
+library(ggrepel)
+
+tree <- ape::read.tree("./step5/aphid_tree.txt")
+plotTree(tree)
+edgelabels(tree$edge.length)
+
+# pairwise distance
+dist_m <- cophenetic.phylo(tree)
+
+dist_c <- melt(dist_m, varnames = c("sp1", "sp2"), value.name = "value")
+head(dist_c)
+
+# the divergence time between the two species pairs equals to their distance divided by 2
+dist_c$time = dist_c$value/2 
+head(dist_c)
+
+write.table(dist_c, file = "pairwise_time.tsv", sep = "\t", row.names = FALSE, quote = FALSE)
+```
+
 
 ## 5 - Improving the B chromosome assembly
 To 
