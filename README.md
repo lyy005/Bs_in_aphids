@@ -565,8 +565,85 @@ perl ./step5/step5.inter_chr.v20260414.pl combined.collinearity.bed.orient.sv_cl
 perl ./step5/step6.fussion_fission.v20260407.pl step5.inter_v20260411 ./step5/X.list step6.output_v20260411
 ```
 
+### 5.4 - Visualization of the rates
 
-## 5 - Improving the B chromosome assembly
+In R, we used the follow commands to visualize the intra-chromosomal rearrangement rates:
+```
+library(ggplot2)
+library(ggrepel)
+
+intra_Adelgidae <- read.table('./step5/Adelgidae.intra_sv.list.rates', header = T)
+intra_Adelgidae$group = "Adelgidae"
+
+intra_Aphidinae <- read.table('./step5/Aphidinae.intra_sv.list.rates', header = T)
+intra_Aphidinae$group = "Aphidinae"
+
+intra_Aphidini <- read.table('./step5/Aphidini.intra_sv.list.rates', header = T)
+intra_Aphidini$group = "Aphidini"
+
+intra_Fordini <- read.table('./step5/Fordini.intra_sv.list.rates', header = T)
+intra_Fordini$group = "Fordini"
+
+intra_Macrosiphini <- read.table('./step5/Macrosiphini.intra_sv.list.rates', header = T)
+intra_Macrosiphini$group = "Macrosiphini"
+
+# outgroups
+intra_Delphacinae <- read.table('./step5/Delphacinae.intra_sv.list.rates', header = T)
+intra_Delphacinae$group = "Delphacinae"
+
+intra_Psylloidea <- read.table('./step5/Psylloidea.intra_sv.list.rates', header = T)
+intra_Psylloidea$group = "Psylloidea"
+
+intra_Triatominae <- read.table('./step5/Triatominae.intra_sv.list.rates', header = T)
+intra_Triatominae$group = "Triatominae"
+
+intra_combined <- rbind(intra_Adelgidae,intra_Aphidini, intra_Fordini, intra_Macrosiphini, 
+                        intra_Delphacinae, intra_Psylloidea, intra_Triatominae)
+
+# remove Sitobion miscanthi
+intra_noSimi <- intra_combined_ingroup[!grepl("Simi", intra_combined_ingroup$spp), ]
+intra_noSimi_mid <- subset(intra_noSimi, time >= 10 & time <= 35)
+
+# violin plot
+intra_noSimi_mid$group = factor(intra_noSimi_mid$group, levels = c("Adelgidae", "Fordini", "Aphidini", "Macrosiphini"))
+p_intra <- ggplot(data = intra_noSimi_mid, aes(x = group, y = rates, group = group, color = group)) +
+			geom_violin(aes(color = group)) +
+			geom_point(position = position_jitter(seed = 1, width = 0.2)) +
+			theme(legend.position = "none") +
+			theme_bw() +
+			geom_label_repel(aes(label = spp),
+				max.overlaps = 200,
+				box.padding   = 0.35,
+				point.padding = 0.5,
+				segment.color = 'grey50') +
+			theme(
+				plot.title = element_text(hjust = 0.5, size = 15, face = "bold"),
+				legend.position= "none",
+				strip.background=element_blank(),
+				axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1, size = 15),
+				axis.title.x = element_text(size = 15), 
+				axis.text.y = element_text(size = 15), 
+				axis.title.y = element_text(size = 15)
+			) +
+			xlab('Taxonomic groups') + ylab('Rearrangement rates') # + ggtitle('Sequencing depth')
+
+# kruskal-wallis tests
+
+library(pgirmess)
+
+kruskal.test(rates ~ group, data = intra_noSimi_mid)
+
+kruskalmc(intra_noSimi_mid$rates, intra_noSimi_mid$group, alpha = 0.05)
+kruskalmc(intra_noSimi_mid$rates, intra_noSimi_mid$group, alpha = 0.01)
+kruskalmc(intra_noSimi_mid$rates, intra_noSimi_mid$group, alpha = 0.001)
+kruskalmc(intra_noSimi_mid$rates, intra_noSimi_mid$group, alpha = 0.0001)
+kruskalmc(intra_noSimi_mid$rates, intra_noSimi_mid$group, alpha = 0.00001)
+
+
+
+```
+
+## 6 - Improving the B chromosome assembly
 To 
 
 
