@@ -27,7 +27,10 @@ Photos of the sumac galls induced by these aphids. Scale bar represents 1 cm.
   - [4.1 - OrthoFinder](#41---ortholog-inference)
   - [4.2 - Phylogenetic tree reconstruction](#42---phylogenetic-tree-reconstruction)
   - [4.3 - Divergence time estimation](#43---divergence-time-estimation)
-- [5 - MCScanX]
+- [5 - Chromosomal rearrangement rate estimation](#5---chromosomal-rearrangement-rate-estimation)
+  - [5.1 - Divergence time between species pairs](#51---divergence-time-between-species-pairs)
+  - [5.2 - Estimating intra-chromosomal rearrangement rates](#52---estimating-intra-chromosomal-rearrangement-rates)
+  - [5.3 - Estimating inter-chromosomal rearrangement rates](#53---estimating-inter-chromosomal-rearrangement-rates)
 
 ## 1 - Mitochondrial genome assembly and species identification
 ### 1.1 - Quality control
