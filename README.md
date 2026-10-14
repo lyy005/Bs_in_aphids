@@ -496,7 +496,7 @@ tail -n 1 r8s_tmp.txt | cut -c 16- > aphid_tree.txt
 To quantitatively estimate chromosomal rearrangement rates, we calculated the amount of chromosomal rearrangements normalized by divergence time (per million years). 
 
 ### 5.1 - Divergence time between species pairs
-To calculate the rearrangement rates between pairs of species, we first estimated the divergence time between pairs of species. We used R to extract the divergence time from the time tree from r8s. 
+To calculate rearrangement rates between species pairs, we first estimated divergence times between pairs of species. We used R to extract divergence times from the time tree from r8s. 
 
 ```
 # ref: https://rdrr.io/cran/ape/man/cophenetic.phylo.html
@@ -525,6 +525,41 @@ dist_c$time = dist_c$value/2
 head(dist_c)
 
 write.table(dist_c, file = "pairwise_time.tsv", sep = "\t", row.names = FALSE, quote = FALSE)
+```
+
+### 5.2 - Estimating intra-chromosomal rearrangement rates
+To calculate the intra-chromosomal rearrangement rates, we first ran MCScanX version 1.0.0 and calculated the 
+
+```
+# step 0 - McScanX
+## extract the 1-to-1 orthologs
+perl ./step5/step0.pick_single_copy_genes.v20250915.pl Orthogroups.tsv s5h1 s1 combined.homology
+# make gff file
+cat s5h1.gff s1.gff > combined.gff
+# run MCScanX
+~/bin/MCScanX/MCScanX_h combined
+
+# rates
+# step1 - from .collinear to .bed file, labeling the start and end for each collinear block
+perl ./step5/step1.MCScanX_collinearity_2_block_bed.pl combined.collinearity combined.gff dt sc combined.collinearity.bed
+
+# step2 - orient the blocks from beginning to end based on sp1
+perl ./step5/step2.orient_from_start2end.v20251030.pl combined.collinearity.bed combined.collinearity.bed.orient
+
+# step3 - classify SVs
+python step3.classify_rearrangements.v20251031.py -i combined.collinearity.bed.orient -o combined.collinearity.bed.orient.sv
+
+```
+
+### 5.3 - Estimating inter-chromosomal rearrangement rates
+
+```
+# inter-chromosomal rearrangement rate estimation - v20260411
+# step5 - calculate inter-chr changes
+perl ./step5/step5.inter_chr.v20260414.pl combined.collinearity.bed.orient.sv_classified.tsv s5h1.chr.list s1.chr.list step5.inter_v20260411
+
+# step6 - calculate rearrangement density
+perl ./step5/step6.fussion_fission.v20260407.pl step5.inter_v20260411 ./step5/X.list step6.output_v20260411
 ```
 
 
