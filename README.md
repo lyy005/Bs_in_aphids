@@ -143,6 +143,7 @@ The outputs of hifiasm were scaffolded based on HiC contacts using the Arima Gen
 
 <details>
 <summary>▶ Click to show the HiC mapping code</summary>
+	
 ```
 # Step 0: Index reference
 ~/bin/bwa/bwa_v0.7.17/bwa-0.7.17/bwa index -a bwtsw -p draft.fa draft.fa
@@ -175,6 +176,7 @@ perl ~/Arima_mapping_pipeline/get_stats.pl hic.combined.readgroup.dereplicate.ba
 # scaffolding
 samtools faidx draft.fa ~/bin/yahs/yahs_v1.2.2/yahs --no-contig-ec -e GATC draft.fa hic.combined.readgroup.dereplicate.bam
 ```
+
 </details>
 
 We used the final YaHS output, yahs.out_scaffolds_final.agp, as the reference for scaffolding. But we also performed manual curation to confirm that the corrections suggested by YaHS were correct. 
