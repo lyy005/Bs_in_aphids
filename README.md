@@ -314,7 +314,7 @@ samtools view -c -F 0x904 --threads 10 genome.sorted.bam
 We plotted the distribution of sequencing depth in RStudio
 
 <details>
-<summary> Click to show the R code </summary>
+<summary> <b><u>Click</b></u> to show the R code </summary>
 	
 ```
 depth_mapq0 <- read.table('window_mapq0.regions.bed.gz', header = F)
