@@ -131,7 +131,7 @@ We used hifiasm version 0.25.0 to assemble the HiFi reads with dual scaffolding,
 Before assembly, HiC data were also filtered using Trimmomatic using the same command as the Quality control process in [1.1 - Quality control](#11---quality-control). 
 
 ```
-~/binhifiasm_v0.25.0/hifiasm -o ccs --dual-scaf --telo-m CCTAA --primary -t 96 --h1 HiC_R1.fq.gz --h2 HiC_R2.fq.gz hifi.filt.fastq.gz
+~/bin/hifiasm_v0.25.0/hifiasm -o ccs --dual-scaf --telo-m CCTAA --primary -t 96 --h1 HiC_R1.fq.gz --h2 HiC_R2.fq.gz hifi.filt.fastq.gz
 
 # converting .gfa files to .fasta files
 awk '/^S/{print ">"$2;print $3}' ccs.hic.hap1.p_ctg.gfa > ccs.hic.hap1.p_ctg.fa
@@ -232,7 +232,10 @@ singularity exec ~/bin/braker/BRAKER-3/braker3.sif braker.pl --genome=genome.mas
 	--busco_lineage=hemiptera_odb10
 ```
 
-We then renamed the genes so their IDs increased in order along the chromosomes.  
+We then renamed the genes so their IDs increased in order along the chromosomes. 
+<details>
+<summary> Click to show the code to reformat the outputs from BRAKER </summary>
+	
 ```
 perl ./step2/length_distribution_V1.5.pl genome.masked.fa
 
@@ -260,6 +263,9 @@ perl ./step2/remove_genes_with_stop_codons.pl braker.pep.fa braker.pep.noStop.fa
 # longest isoform
 perl ./step2/find_longest_protein_Braker_v20210403b.braker.pl braker.pep.noStop.fa braker.pep.noStop.fa.longest
 ```
+
+</details>
+
 ### 2.6 - BUSCO assessment
 TBD
 ```
@@ -270,6 +276,9 @@ Aphids have the XO sex determination system, where females possess two copies of
 ### 3.1 - Assigning X chromosomes of *K. r. ovogallis* based on the sequencing depth of males and females
 We aligned reads from male and female *K. r. ovogallis* individuals to the reference genome. Chromosomes exhibiting half the sequencing depth in males compared with females were identified as X chromosomes. We then numbered the chromosomes in descending order of length. All sumac gall aphids have 10 autosomes (1 to 10) and 3 Xs (X1 to X3). 
 
+<details>
+<summary> Click to show the code for mapping </summary>
+	
 ```
 ~/bin/bwa_v0.7.19/bwa index genome.fa
 ~/bin/bwa_v0.7.19/bwa mem -t 20 -o genome.sam ../../references/s5h1_plus_allBcomps.fa pe.1.fq.gz pe.2.fq.gz
@@ -300,7 +309,13 @@ echo "mapped"
 samtools view -c -F 0x904 --threads 10 genome.sorted.bam
 ```
 
+</details>
+
 We plotted the distribution of sequencing depth in RStudio
+
+<details>
+<summary> Click to show the R code </summary>
+	
 ```
 depth_mapq0 <- read.table('window_mapq0.regions.bed.gz', header = F)
 depth_mapq1 <- read.table('window_mapq1.regions.bed.gz', header = F)
@@ -358,6 +373,9 @@ ggplot(depth_AB, aes(x = chr, y = V4, fill = V5)) +
     #axis.ticks.x = element_blank()
   )
 ```
+
+</details>
+
 ### 3.2 - Assigning X chromosomes of other species based on the genome synteny with *K. r. ovogallis*
 We aligned assemblies to the genome of *K. r. ovogallis* using minimap2 version 2.28 and visualized using Asynt (https://github.com/simonhmartin/asynt). 
 
