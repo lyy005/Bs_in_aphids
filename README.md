@@ -142,7 +142,7 @@ awk '/^S/{print ">"$2;print $3}' ccs.hic.hap2.p_ctg.gfa > ccs.hic.hap2.p_ctg.fa
 The outputs of hifiasm were scaffolded based on HiC contacts using the Arima Genomics mapping pipeline (https://github.com/ArimaGenomics/mapping_pipeline) and YaHS version 1.2.2 (https://github.com/c-zhou/yahs). Each haplotype was scaffolded independently. draft.fa file was the output of hifiasm assembly (either ccs.hic.hap1.p_ctg.fa or ccs.hic.hap2.p_ctg.fa).
 
 <details>
-<summary>▶ Click to show the HiC mapping code</summary>
+<summary> Click to show the HiC mapping code </summary>
 	
 ```
 # Step 0: Index reference
