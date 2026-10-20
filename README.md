@@ -667,8 +667,34 @@ kruskalmc(intra_noSimi_mid$rates, intra_noSimi_mid$group, alpha = 0.00001)
 To 
 
 
+## 7 - *dN/dS* and gene expression of B-linked genes
+### 7.1 - dN/dS
+To measure the amount of non-synonymous substitutions versus synonymous substitutions, we first extracted the single-copy orthologs among the five species: *K. r. ovogallis*, *K. r. ovatirhusicola*, *K. r. rhusicola*, *K. r. ensigallis*, *K. r. sp.*, and *Floraphis meitanensis*. To measure the differences between A-linked genes and B-linked genes, we treated each B chromosome as an independent sample. So each gene must be single-copy on either A chromosomes or a B chromosome. Then we extracted the CDS of these single-copy orthologs, performed codon-based alignments (https://github.com/lyy005/codon_alignment), and calculated *dN/dS* ratios. We used *Floraphis meitanensis* as the outgroup. The *dN/dS* of each gene copy was measured in comparison to the gene copy of *Floraphis meitanensis* using KaKs_Calculator version 3.0 (https://github.com/Chenglin20170390/KaKs_Calculator-3.0). 
 
+```
+# first, ran codon alignments
+perl ~/bin/codon_alignment_v1.5/codon_alignment.pl gene.CDS.fa 1 0
 
+# Then, convert alignments to .axt format
+perl ./step7/aln2axt.pl gene.CDS.fa.nt.cleanup.aln
+
+# lastly, calculated dN/dS ratios using KaKs calculator
+~/bin/KaKs_Calculator_v3.0/bin/KaKs -i gene.CDS.fa.nt.cleanup.aln.pw.axt -o gene.kaks
+```
+
+### 7.2 - TPM 
+To estimate the expression levels of genes on As (autosomes and Xs) and Bs, we measured the Transcripts Per Million (TPM) for each gene using Salmon version 2.3.2. 
+
+We first extracted the longest CDS of each gene:
+```
+perl ./step2/find_longest_protein_Braker_v20210403b.braker.pl braker.cds.fa braker.cds.fa.longest
+
+```
+Then we used salmon to measure TPM values. 
+```
+salmon index --keepDuplicates -t braker.cds.fa.longest -i salmon_index_keepDup -p 10
+salmon quant -i salmon_index_keepDup -l A -1 pe.1.fq.gz -2 pe.2.fq.gz -p 10 -o salmon_quant_keepDup
+```
 
 #### Identify Xs based on resequencing data
 To further confirm the identified Xs, we sequenced males and females of *Kaburagia rhusicola rhusicola*, 
