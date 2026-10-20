@@ -668,7 +668,7 @@ To
 
 
 ## 7 - *dN/dS* and gene expression of B-linked genes
-### 7.1 - dN/dS
+### 7.1 - Measuring *dN/dS*
 To measure the amount of non-synonymous substitutions versus synonymous substitutions, we first extracted the single-copy orthologs among the five species: *K. r. ovogallis*, *K. r. ovatirhusicola*, *K. r. rhusicola*, *K. r. ensigallis*, *K. r. sp.*, and *Floraphis meitanensis*. To measure the differences between A-linked genes and B-linked genes, we treated each B chromosome as an independent sample. So each gene must be single-copy on either A chromosomes or a B chromosome. Then we extracted the CDS of these single-copy orthologs, performed codon-based alignments (https://github.com/lyy005/codon_alignment), and calculated *dN/dS* ratios. We used *Floraphis meitanensis* as the outgroup. The *dN/dS* of each gene copy was measured in comparison to the gene copy of *Floraphis meitanensis* using KaKs_Calculator version 3.0 (https://github.com/Chenglin20170390/KaKs_Calculator-3.0). 
 
 ```
@@ -682,7 +682,7 @@ perl ./step7/aln2axt.pl gene.CDS.fa.nt.cleanup.aln
 ~/bin/KaKs_Calculator_v3.0/bin/KaKs -i gene.CDS.fa.nt.cleanup.aln.pw.axt -o gene.kaks
 ```
 
-### 7.2 - TPM 
+### 7.2 - Estimating TPM 
 To estimate the expression levels of genes on As (autosomes and Xs) and Bs, we measured the Transcripts Per Million (TPM) for each gene using Salmon version 2.3.2. 
 
 We first extracted the longest CDS of each gene:
