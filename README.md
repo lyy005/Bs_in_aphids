@@ -17,12 +17,12 @@ Photos of the sumac galls induced by these aphids. Scale bar represents 1 cm.
   - [2.2 - Genome assembly using hifiasm](#22---genome-assembly-using-hifiasm)
   - [2.3 - Scaffolding using HiC data](#23---scaffolding-using-hic-data)
   - [2.4 - Manual curation](#24---manual-curation)
-  - [2.5 - Annotation](#25---gene-annotation)
-- [3 - Quality assessment of the genome assembly](#3---quality-assessment-of-the-genome-assembly)
+  - [2.5 - Gene annotation](#25---gene-annotation)
+  - [2.6 - Telomere and rDNA annotation](#33---telomere-and-rdna-annotation)
+  - [2.7 - Transposable element annotation](#34---transposable-element-annotation)
+- [3 - X chromosome assignment](#3---quality-assessment-of-the-genome-assembly)
   - [3.1 - Identifying Xs of *K. r. ovogallis* based on the sequencing depth of males and females](#31---assigning-x-chromosomes-of-k-r-ovogallis-based-on-the-sequencing-depth-of-males-and-females)
   - [3.2 - Identifying Xs of other species based on the genome synteny with *K. r. ovogallis*](#32---assigning-x-chromosomes-of-other-species-based-on-the-genome-synteny-with-k-r-ovogallis)
-  - [3.3 - Telomere and rDNA annotation](#33---telomere-and-rdna-annotation)
-  - [3.4 - Transposable element annotation](#34---transposable-element-annotation)
 - [4 - Phylogeny reconstruction](#4---phylogeny-reconstruction)
   - [4.1 - OrthoFinder](#41---ortholog-inference)
   - [4.2 - Phylogenetic tree reconstruction](#42---phylogenetic-tree-reconstruction)
@@ -218,7 +218,15 @@ We ran the CurationPretext pipeline:
 nextflow run ~/bin/curationpretext/v1.6.1 -profile singularity -params-file params.yaml
 ```
 
-### 2.5 - Gene annotation
+### 2.5 - BUSCO assessment
+We measured the quality of the genome assembly using BUSCOs (http://busco.ezlab.org/):
+```
+conda activate busco_v5.4.2
+
+busco -i genome.fa -o genome_hemiptera -m genome -l hemiptera_odb10 -c 10 -f
+```
+
+### 2.6 - Gene annotation
 To annotate genes, we followed the annotation pipeline of BRAKER version 3.0.8. 
 We first soft-masked the genome using tantan version 51. Then we aligned RNA-seq data to the genome using HISAT2 version 2.2.1. The RNA-seq data were filtered the same way as [1.1](#11---quality-control). Then we used BRAKER to annotate the genome based on both RNA-seq evidence and protein evidence of related aphid species (proteins_NCBI_GCF_aphids_v20210211_noStopCodon.fasta file in the step2 folder).
 ```
@@ -272,12 +280,68 @@ perl ./step2/find_longest_protein_Braker_v20210403b.braker.pl braker.pep.noStop.
 
 </details>
 
-### 2.6 - BUSCO assessment
-TBD
+### 2.7 - Telomere annotation
+To assess the completeness of assembled chromosomes, we annotated telomeric sequences using two approaches: seqtk version 1.4 (https://github.com/lh3/seqtk) and telomere version 0.0.4 (https://github.com/sanger-tol/telomere). 
+
+seqtk searches for telomeres at the very end of each scaffold:
 ```
+# search for telomeres at ends of each scaffold
+conda activate seqtk_v1.4-r122
+seqtk telo -m CCTAA genome.fa > genome.fa.telo
+
+# calculate the length of the assembly
+perl ./step2/length_distribution_V1.5.pl genome.fa
+
+# summarize the location of telomeres to a table
+perl ./step2/summarize_telomere.v0.92.pl genome.fa.telo genome.fa.length genome.fa.telo.summary
 ```
-## 3 - Quality assessment of the genome assembly
-Aphids have the XO sex determination system, where females possess two copies of the X chromosomes, whereas males possess one copy of the X. Therefore, we assigned X chromosomes in the genome assembly by estimating the sequencing depth of each chromosome using whole-genome sequencing data from males and females of *K. r. ovogallis*. As the X chromosomes were conserved in aphids (Li et al. 2020; Mathers et al. 2021; Li et al. 2023), we assigned the X chromosomes of other sumac gall aphid species based on the genome synteny with *K. r. ovogallis*. 
+
+telomere searches for the percentage of telomeres in sliding windows across the genome.
+```
+~/bin/telomere-0.0.4/find_telomere genome.fa TTAGG > genome.telomere
+cat genome.telomere | awk '{print $1"\t"$(NF-4)"\t"$(NF-3)"\t"$(NF-2)"\t"$(NF-1)"\t"$NF}' - > genome.telomere.reform
+sdust genome.fa > genome.sdust
+
+java -cp ~/bin/telomere-0.0.4/telomere.jar SizeFasta genome.fa > genome.lens 
+
+# FindTelomereWindows writes prefix.telomere.bed and prefix.windows
+# (and with --split also fwd/rev beds + fwd/rev windows).
+# Lowering threshold to 0.10 (10%) from the initial 0.40 (40%)
+java -cp ~/bin/telomere-0.0.4/telomere.jar FindTelomereWindows genome.telomere 99.9 0.1
+java -cp ~/bin/telomere-0.0.4/telomere.jar FindTelomereBreaks genome.lens genome.sdust genome.telomere > genome.breaks
+
+# check the percentage of telomeres in each window
+less -S genome.windows | sort -V -k1,1 -k2,2n | less -S
+```
+
+### 2.8 Ribosomal DNA annotation
+Aphid ribosomal DNA arrays are located on the X chromosome (Blackman and Spence 1996). To locate the rDNA arrays in aphids with multiple Xs, we annotated the rDNAs using barrnap (https://github.com/tseemann/barrnap). 
+
+```
+conda activate barrnap
+barrnap --quiet genome.fa --kingdom euk
+```
+
+### 2.9 - Transposable element annotation
+To understand the distribution of transposable elements, we annotated transposable elements using Earl Grey version 6.3.0 (https://github.com/TobyBaril/EarlGrey). To ensure consistent annotation across genomes, we then combined and clustered the de novo curated elements using mmseqs version 18. This method was suggested by Earl Grey: https://github.com/TobyBaril/EarlGrey/issues/216
+
+```
+# First, we annotated each genome using Earl Grey
+earlGrey -g kaburagiaRhusicola.fa -s kaburagiaRhusicola -r arthropoda -o output -t 20 -c yes -e yes -d yes
+
+# Secondly, we renamed the elements by species names, so that we know which species the element was found in. For example:
+perl ./step2/add_spp_name.pl s1.strained s1 s1.renamed.strained
+
+cat *.renamed.strained > combined.renamed.strained
+mmseqs easy-cluster combined.renamed.strained combined.renamed.strained.easyCluster tmp --min-seq-id 0.8 -c 0.8 --cov-mode 1 -v 2 --threads 10 --cluster-reassign
+
+# Lastly, we annotated all the genomes using this library
+earlGreyAnnotationOnly -g kaburagiaRhusicola.fa -s kaburagiaRhusicola -o output -t 20 -l combined.renamed.strained.easyCluster_rep_seq.fasta
+
+```
+
+## 3 - X chromosome assignment
+Aphids have the XO sex determination system, where females have two copies of the X chromosomes, whereas males have one copy of the X. Therefore, we assigned X chromosomes in the genome assembly by estimating the sequencing depth of each chromosome using whole-genome sequencing data from males and females of *K. r. ovogallis*. As the X chromosomes were conserved in aphids (Li et al. 2020; Mathers et al. 2021; Li et al. 2023), we assigned the X chromosomes of other sumac gall aphid species based on the genome synteny with *K. r. ovogallis*. 
 
 ### 3.1 - Assigning X chromosomes of *K. r. ovogallis* based on the sequencing depth of males and females
 We aligned reads from male and female *K. r. ovogallis* individuals to the reference genome. Chromosomes exhibiting half the sequencing depth in males compared with females were identified as X chromosomes. We then numbered the chromosomes in descending order of length. All sumac gall aphids have 10 autosomes (1 to 10) and 3 Xs (X1 to X3). 
@@ -421,65 +485,6 @@ dev.off() # Close the file
 The resulting dotplot looks like this:
 <img width="1780" height="1770" alt="image" src="https://github.com/user-attachments/assets/dd2775f6-1916-45c8-8782-6349a8fd67d5" />
 
-
-### 3.3 - Telomere and rDNA annotation
-To assess the completeness of assembled chromosomes, we annotated telomeric sequences using two approaches: seqtk version 1.4 (https://github.com/lh3/seqtk) and telomere version 0.0.4 (https://github.com/sanger-tol/telomere). 
-
-seqtk searches telomeres are the very end of each scaffold:
-```
-# search for telomeres at ends of each scaffold
-conda activate seqtk_v1.4-r122
-seqtk telo -m CCTAA genome.fa > genome.fa.telo
-
-# calculate the length of the assembly
-perl ./step2/length_distribution_V1.5.pl genome.fa
-
-# summarize the location of telomeres to a table
-perl ./step3/summarize_telomere.v0.92.pl genome.fa.telo genome.fa.length genome.fa.telo.summary
-```
-
-telomere searches the percentage of telomeres in sliding windows across the genome.
-```
-~/bin/telomere-0.0.4/find_telomere genome.fa TTAGG > genome.telomere
-cat genome.telomere | awk '{print $1"\t"$(NF-4)"\t"$(NF-3)"\t"$(NF-2)"\t"$(NF-1)"\t"$NF}' - > genome.telomere.reform
-sdust genome.fa > genome.sdust
-
-java -cp ~/bin/telomere-0.0.4/telomere.jar SizeFasta genome.fa > genome.lens 
-
-# FindTelomereWindows writes prefix.telomere.bed and prefix.windows
-# (and with --split also fwd/rev beds + fwd/rev windows).
-# Lowering threshold to 0.10 (10%) from the initial 0.40 (40%)
-java -cp ~/bin/telomere-0.0.4/telomere.jar FindTelomereWindows genome.telomere 99.9 0.1
-java -cp ~/bin/telomere-0.0.4/telomere.jar FindTelomereBreaks genome.lens genome.sdust genome.telomere > genome.breaks
-
-# check the percentage of telomeres in each window
-less -S genome.windows | sort -V -k1,1 -k2,2n | less -S
-```
-
-Aphid ribosomal DNA arrays are located on the X chromosome (Blackman and Spence 1996). To locate the rDNA arrays in aphids with multiple Xs, we annotated the rDNAs using barrnap (https://github.com/tseemann/barrnap). 
-
-```
-conda activate barrnap
-barrnap --quiet genome.fa --kingdom euk
-```
-
-### 3.4 - Transposable element annotation
-To understand the distribution of transposable elements, we annotated transposable elements using Earl Grey version 6.3.0 (https://github.com/TobyBaril/EarlGrey). To ensure consistent annotation across genomes, we then combined and clustered the de novo curated elements using mmseqs version 18. This method was suggested by Earl Grey: https://github.com/TobyBaril/EarlGrey/issues/216
-
-```
-# First, we annotated each genome using Earl Grey
-earlGrey -g kaburagiaRhusicola.fa -s kaburagiaRhusicola -r arthropoda -o output -t 20 -c yes -e yes -d yes
-
-# Secondly, we renamed the elements by species names, so that we know which species the element was found in. For example:
-perl ./step3/add_spp_name.pl s1.strained s1 s1.renamed.strained
-
-cat *.renamed.strained > combined.renamed.strained
-mmseqs easy-cluster combined.renamed.strained combined.renamed.strained.easyCluster tmp --min-seq-id 0.8 -c 0.8 --cov-mode 1 -v 2 --threads 10 --cluster-reassign
-
-# Lastly, we annotated all the genomes using this library
-earlGreyAnnotationOnly -g kaburagiaRhusicola.fa -s kaburagiaRhusicola -o output -t 20 -l combined.renamed.strained.easyCluster_rep_seq.fasta
-
-```
 
 ## 4 - Phylogeny reconstruction
 ### 4.1 - Ortholog inference
@@ -708,6 +713,7 @@ salmon quant -i salmon_index_keepDup -l A -1 pe.1.fq.gz -2 pe.2.fq.gz -p 10 -o s
 ```
 
 ## 8 - 3D organization of B chromosomes
+### 8.1 - TAD
 To explore the 3D organization of Bs, we followed the steps of HiCExplorer version 3.7.6. 
 
 First, we mapped HiC reads to aphid genomes with 1 copy of each B type. To avoid multi-mapped reads, we removed reads with MAPQ < 15. Then we corrected the HiC matrix, merged to 30kb resolution, 
@@ -727,6 +733,83 @@ hicPlotTADs --tracks ./step8/hic_tracks.corrected.ini --region s5h1_14B:0-137889
 hicPlotTADs --tracks ./step8/hic_tracks.corrected.ini --region s5h1_15B:0-12963132 -o hic_corrected_30kb.hicPlotTADs.s5h1_15B.pdf
 
 ```
+### 8.2 - cis interactions
+We calculated the average of interactions between Bs and As (autosomes and Xs) using cooltools version 0.7.1. 
+
+```
+hicConvertFormat --matrices hic_matrix.h5 --inputFormat h5 --outputFormat cool --outFileName hic_matrix.cool
+
+conda activate cooltools_v0.7.1
+cooler balance hic_matrix.cool
+cooltools expected-trans hic_matrix.cool -p 10 -o trans_contacts.tsv
+```
+
+We visualized the trans-contacts in R:
+
+<details>
+<summary> Click to show the R script for visualization </summary>
+
+```
+df <- read.table('trans_contacts.tsv', header = T)
+
+head(df)
+
+# select only the chrs
+selected_chr <- c(
+  "s5h1_1", "s5h1_2", "s5h1_3", "s5h1_4", "s5h1_5", "s5h1_6", "s5h1_7", "s5h1_8", "s5h1_9", "s5h1_10", 
+  "s5h1_X1", "s5h1_X2", "s5h1_X3", "s5h1_14B", "s5h1_15B"
+)
+
+
+df_subset <- df %>%
+  filter(
+    region1 %in% selected_chr,
+    region2 %in% selected_chr
+  ) %>%
+  distinct(region1, region2, .keep_all = TRUE)
+
+df_subset
+
+
+# Create full symmetric pair matrix
+mat <- bind_rows(
+  df_subset %>% select(r1 = region1, r2 = region2, val = balanced.avg),
+  df_subset %>% select(r1 = region2, r2 = region1, val = balanced.avg)
+) %>%
+  distinct(r1, r2, .keep_all = TRUE) %>%
+  pivot_wider(names_from = r2, values_from = val) %>%
+  column_to_rownames("r1") %>%
+  as.matrix()
+
+# Define your exact desired order
+target_order <- c(
+  "s5h1_1", "s5h1_2", "s5h1_3", "s5h1_4", "s5h1_5", 
+  "s5h1_6", "s5h1_7", "s5h1_8", "s5h1_9", "s5h1_10", 
+  "s5h1_X1", "s5h1_X2", "s5h1_X3", "s5h1_14B", "s5h1_15B"
+)
+
+# Subset to keep only regions present in your current matrix
+valid_order <- target_order[target_order %in% rownames(mat)]
+
+# Reorder matrix rows and columns
+mat_ordered <- mat[valid_order, valid_order]
+
+# Set the diagonal to NA
+diag(mat_ordered) <- NA
+
+pheatmap(
+  mat_ordered,
+  angle_col = "45",
+  cluster_rows = F,
+  cluster_cols = F,
+  scale = "none",
+  fontsize_row = 8,
+  fontsize_col = 8, 
+  na_col = "grey90",
+)
+```
+</details>
+
 ## 9 - Methylation in B chromosomes
 To identify DNA methylation, we used pbmm2 version 1.17.0 (https://github.com/PacificBiosciences/pbmm2) and aligned_bam_to_cpg_scores version 3.0 (https://github.com/PacificBiosciences/pb-CpG-tools). We combined both haplotypes of *K. r. ensigallis* so that the sequencing depth of autosomes and Xs were similar to that of Bs. 
 
