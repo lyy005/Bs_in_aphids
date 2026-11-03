@@ -1,4 +1,4 @@
-<img width="468" height="13" alt="image" src="https://github.com/user-attachments/assets/ba1ddff8-48a7-4117-9661-63af843c3dea" /># Bs_in_aphids
+# Bs_in_aphids
 Pipeline for identifying supernumerary B chromosomes in sumac gall aphids
 
 Photos of the sumac galls induced by these aphids. Scale bar represents 1 cm. 
