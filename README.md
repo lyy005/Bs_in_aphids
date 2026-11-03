@@ -35,7 +35,7 @@ Photos of the sumac galls induced by these aphids. Scale bar represents 1 cm.
 - [7 - Estimation of *dN/dS* and gene expression](#7---dnds-and-gene-expression-of-b-linked-genes)
   - [7.1 - *dN/dS* ](#71---measuring-dnds)
   - [7.2 - TPM](#72---estimating-tpm)
-- [8 - TAD]
+- [8 - TAD](#8---3d-organization-of-b-chromosomes)
 
 ## 1 - Mitochondrial genome assembly and species identification
 ### 1.1 - Quality control
