@@ -17,10 +17,12 @@ Photos of the sumac galls induced by these aphids. Scale bar represents 1 cm.
   - [2.2 - Genome assembly using hifiasm](#22---genome-assembly-using-hifiasm)
   - [2.3 - Scaffolding using HiC data](#23---scaffolding-using-hic-data)
   - [2.4 - Manual curation](#24---manual-curation)
-  - [2.5 - Gene annotation](#25---gene-annotation)
-  - [2.6 - Telomere and rDNA annotation](#33---telomere-and-rdna-annotation)
-  - [2.7 - Transposable element annotation](#34---transposable-element-annotation)
-- [3 - X chromosome assignment](#3---quality-assessment-of-the-genome-assembly)
+  - [2.5 - BUSCO assessment](#25---busco-assessment)
+  - [2.6 - Gene annotation](#26---gene-annotation)
+  - [2.7 - Telomere annotation](#27---telomere-annotation)
+  - [2.8 - Ribosomal DNA annotation](#28-ribosomal-dna-annotation)
+  - [2.9 - Transposable element annotation](#29---transposable-element-annotation)
+- [3 - X chromosome assignment](#3---x-chromosome-assignment)
   - [3.1 - Identifying Xs of *K. r. ovogallis* based on the sequencing depth of males and females](#31---assigning-x-chromosomes-of-k-r-ovogallis-based-on-the-sequencing-depth-of-males-and-females)
   - [3.2 - Identifying Xs of other species based on the genome synteny with *K. r. ovogallis*](#32---assigning-x-chromosomes-of-other-species-based-on-the-genome-synteny-with-k-r-ovogallis)
 - [4 - Phylogeny reconstruction](#4---phylogeny-reconstruction)
@@ -31,12 +33,19 @@ Photos of the sumac galls induced by these aphids. Scale bar represents 1 cm.
   - [5.1 - Divergence time between species pairs](#51---divergence-time-between-species-pairs)
   - [5.2 - Estimating intra-chromosomal rearrangement rates](#52---estimating-intra-chromosomal-rearrangement-rates)
   - [5.3 - Estimating inter-chromosomal rearrangement rates](#53---estimating-inter-chromosomal-rearrangement-rates)
+  - [5.4 - Visualization of rates](#54---visualization-of-rates)
 - [6 - B chromosome assembly]
 - [7 - Estimation of *dN/dS* and gene expression](#7---dnds-and-gene-expression-of-b-linked-genes)
   - [7.1 - *dN/dS* ](#71---measuring-dnds)
   - [7.2 - TPM](#72---estimating-tpm)
 - [8 - 3D organization of B chromosomes](#8---3d-organization-of-b-chromosomes)
-- [9 - Methylation of B chromosomes]()
+  - [8.1 - Topologically associating domain](#81---tad)
+  - [8.2 - Trans interactions between chromosomes](#82---trans-interactions)
+- [9 - Methylation of B chromosomes](#9---methylation-in-b-chromosomes)
+  - [9.1 - Methylation detection](#91---methylation-detection)
+  - [9.2 - CpGs detected in the genome](92---cpg-sites-in-the-genome)
+  - [9.3 - Exon, intron, and intergenic regions](#93---identifying-exon-intron-and-intergenic-regions)
+  - [9.4 - Summarization and visualization of CpGs]()
 
 ## 1 - Mitochondrial genome assembly and species identification
 ### 1.1 - Quality control
@@ -532,6 +541,9 @@ To quantitatively estimate chromosomal rearrangement rates, we calculated the am
 ### 5.1 - Divergence time between species pairs
 To calculate rearrangement rates between species pairs, we first estimated divergence times between pairs of species. We used R to extract divergence times from the time tree from r8s. 
 
+<details>
+<summary> Click to show the R script to extract divergence time </summary>
+	
 ```
 # ref: https://rdrr.io/cran/ape/man/cophenetic.phylo.html
 # ref: https://blog.phytools.org/2013/10/finding-edge-lengths-of-all-terminal.html
@@ -560,6 +572,8 @@ head(dist_c)
 
 write.table(dist_c, file = "pairwise_time.tsv", sep = "\t", row.names = FALSE, quote = FALSE)
 ```
+
+</details>
 
 ### 5.2 - Estimating intra-chromosomal rearrangement rates
 To calculate the intra-chromosomal rearrangement rates, we first ran MCScanX version 1.0.0 and calculated the 
@@ -596,7 +610,7 @@ perl ./step5/step5.inter_chr.v20260414.pl combined.collinearity.bed.orient.sv_cl
 perl ./step5/step6.fussion_fission.v20260407.pl step5.inter_v20260411 ./step5/X.list step6.output_v20260411
 ```
 
-### 5.4 - Visualization of the rates
+### 5.4 - Visualization of rates
 
 In R, we used the following commands to visualize the intra-chromosomal rearrangement rates:
 
@@ -844,6 +858,9 @@ perl ./step9/make_CpG_BEDs.pl genome.fa genome.bed
 ### 9.3 - Identifying exon, intron, and intergenic regions
 We combined the GFF files of both hap1 and hap2 and extracted exon, intron, and intergenic regions. Then we used bedtools to extract the CpGs in each region.
 
+<details>
+<summary> Click to show the code for extracting CpGs in different regions </summary>
+
 ```
 cat hap1.gff hap2.gff > genome.gff
 
@@ -894,6 +911,218 @@ do
 done
 ```
 
+</details>
+
+### 9.4 - Summarization and visualization of CpGs
+
+<details>
+<summary> Click to show the R script </summary>
+
+```
+# load libraries
+library(data.table)
+library(ggplot2)
+
+# define types of chromosomes
+A_chr <-  c("s11h1_1", "s11h1_2", "s11h1_3", "s11h1_4", "s11h1_5", "s11h1_6", "s11h1_7", "s11h1_8", "s11h1_9", "s11h1_10", 
+            "s11h2_1", "s11h2_2", "s11h2_3", "s11h2_4", "s11h2_5", "s11h2_6", "s11h2_7", "s11h2_8", "s11h2_9", "s11h2_10")
+
+X_chr <- c("s11h1_X1", "s11h1_X2", "s11h1_X3", "s11h2_X1", "s11h2_X2", "s11h2_X3")
+
+B_chr <- c("s11h1_14B", "s11h1_15B", 
+  "s11h1_16B", "s11h1_17B", "s11h1_18B", 
+  "s11h1_19B", "s11h1_20B", "s11h1_21B", 
+  "s11h1_31B", "s11h1_32B", "s11h1_33B", 
+  "s11h1_34B", "s11h1_35B")
+
+selected_chr <- c(A_chr, X_chr, B_chr)
+
+# this is the code for introns, but we can make one for exons and intergenic regions
+## 1 - number of CpGs detected by HiFi reads
+meth_cov5_intron <- fread("hifi_CpG.intron.bed",
+  header = F,
+  select = c(1, 2, 4, 6), 
+  col.names = c(
+    "chrom",
+    "begin",
+    "mod_score",
+    "cov"
+  )
+)
+
+head(meth_cov5_intron)
+
+# keep sites with on chrs
+meth_cov5_intron_chr <- meth_cov5_intron[chrom %in% selected_chr]
+
+meth_cov5_intron_chr[, group := fcase(
+  chrom %in% A_chr, "A",
+  chrom %in% X_chr, "X",
+  chrom %in% B_chr, "B"
+)]
+
+meth_cov5_intron_chr$group = factor(meth_cov5_intron_chr$group, levels = c("A", "X", "B"))
+
+## 2 - number of CpGs on the genome. This number is used later for calculating the percentage of methylated sites
+intron_CpGs <- fread(
+  "genome_CpG.intron.each_chr.table",
+  select = 1:2,
+  col.names = c("total_CpGs", "chr")
+)
+
+intron_CpGs <- intron_CpGs[chr %in% selected_chr]
+
+# Assign chromosome groups
+intron_CpGs[, group := fcase(
+  chr %in% A_chr, "A",
+  chr %in% X_chr, "X",
+  chr %in% B_chr, "B"
+)]
+
+# Sum of CpGs for A, X, and B
+group_intron_CpGs <- intron_CpGs[, .(
+  total_CpGs_chr = sum(total_CpGs)
+), by = group]
+
+group_intron_CpGs
+
+
+# 3 - plotting
+```{r }
+# Define bin boundaries
+# breaks <- c(seq(0, 94, by = 5), 100)
+breaks <- seq(0, 100, by = 10)
+
+# Assign CpGs to bins
+meth_cov5_intron_chr[, bin := cut(
+  mod_score,
+  breaks = breaks,
+  include.lowest = TRUE,
+  right = FALSE
+)]
+
+head(meth_cov5_intron_chr)
+
+meth_cov5_intron_chr_hist <- meth_cov5_intron_chr[, .(
+  N = .N
+), by = .(group, bin)]
+
+# Show the actual ranges and counts
+print(meth_cov5_intron_chr_hist)
+
+
+# add the total number of CpGs for A, X, B
+meth_cov5_intron_chr_hist <- merge(
+  meth_cov5_intron_chr_hist,
+  group_intron_CpGs,
+  by = "group"
+)
+
+
+head(meth_cov5_intron_chr_hist)
+
+
+meth_cov5_intron_chr_hist$methylated_per_CpG = meth_cov5_intron_chr_hist$N / meth_cov5_intron_chr_hist$total_CpGs_chr
+
+head(meth_cov5_intron_chr_hist)
+
+meth_cov5_intron_chr_hist$group <- factor(meth_cov5_intron_chr_hist$group, levels = c("A", "X", "B"))
+
+(
+  p_meth_density_intron <-
+    ggplot(meth_cov5_intron_chr_hist,
+           aes(x = bin,
+               y = methylated_per_CpG,
+               color = group,
+               group = group
+               )
+           ) +
+    geom_line(linewidth = 0.7) +
+    geom_point(size = 2) +
+    scale_color_manual(values = c(
+      "A" = "#F8766D",
+      "X" = "#619CFF",
+      "B" = "#00BA38")
+      ) +
+    scale_y_log10(
+      breaks = c(0.00001, 0.0001, 0.001, 0.01, 0.1, 1),
+      labels = scales::label_percent()
+      ) +
+    theme_bw() + 
+    theme(# strip.text.y=element_text(angle=180, size=15),
+        # strip.text.x=element_text(angle=180, size=8),
+        #legend.position=c(.99,.01), legend.justification=c(1,0),
+        # legend.position= "none",
+        strip.background=element_blank(),
+        #axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1, size = 15),
+        axis.text.x = element_text(color = "black", size = 15, angle = 45, hjust = 1),
+        axis.title.x = element_text(size = 15), 
+        axis.text.y = element_text(color = "black", size = 15), 
+        axis.title.y = element_text(size = 15), 
+        plot.title = element_text(size = 20, face = "bold", color = "black", hjust = 0.5)
+        #plot.title = element_blank()
+        #axis.text.y=element_blank(), axis.ticks.y=element_blank()
+        ) + 
+    xlab('mod_score interval') + ylab('Percentage of CpGs') + ggtitle('Intron')
+)
+
+```
+
+</details>
+
+CpGs on each type of chromosome: 
+
+<details>
+<summary> Click to show R script </summary>
+
+```
+# hifi plot
+meth_cov5_exon_chr$region <- "exon"
+meth_cov5_intron_chr$region <- "intron"
+meth_cov5_intergenic_chr$region <- "intergenic"
+
+hifi <- rbind(meth_cov5_exon_chr, meth_cov5_intron_chr, meth_cov5_intergenic_chr)
+
+head(hifi)
+
+# Count CpGs by source, chromosome group, and region
+hifi_summary <- hifi[, .(N = .N), by = .(group, region)]
+
+head(hifi_summary)
+
+hifi_summary$group = factor(hifi_summary$group, levels = c("A", "X", "B"))
+
+hifi_summary$region = factor(hifi_summary$region, levels = c("intergenic", "intron", "exon"))
+
+(
+  p_CpG_number <- ggplot(hifi_summary, aes(x = region, y = N / 1e6, fill = group)) +
+  geom_col(color = "black", linewidth = 0.2) +
+    scale_y_continuous(breaks = seq(0, 30, 5)) + 
+  scale_fill_manual(values = c(
+    "A" = "#F8766D",
+    "X" = "#619CFF",
+    "B" = "#00BA38"
+  )) +
+    theme_bw() + 
+    theme(# strip.text.y=element_text(angle=180, size=15),
+        # strip.text.x=element_text(angle=180, size=8),
+        #legend.position=c(.99,.01), legend.justification=c(1,0),
+        # legend.position= "none",
+        strip.background=element_blank(),
+        #axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1, size = 15),
+        axis.text.x = element_text(color = "black", size = 15, angle = 45, hjust = 1),
+        axis.title.x = element_text(size = 15), 
+        axis.text.y = element_text(color = "black", size = 15), 
+        axis.title.y = element_text(size = 15), 
+        plot.title = element_text(size = 20, face = "bold", color = "black", hjust = 0.5)
+        #plot.title = element_blank()
+        #axis.text.y=element_blank(), axis.ticks.y=element_blank()
+        ) + 
+    xlab('Type') + ylab('Number of CpGs (Mb)') + ggtitle('Number of CpGs')
+)
+```
+
+</details>
 
 #### Map HiFi reads to hifiasm scaffolds
 Using samtools version 1.21 and minimap2 version 2.28
