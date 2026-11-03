@@ -40,7 +40,7 @@ Photos of the sumac galls induced by these aphids. Scale bar represents 1 cm.
   - [7.2 - TPM](#72---estimating-tpm)
 - [8 - 3D organization of B chromosomes](#8---3d-organization-of-b-chromosomes)
   - [8.1 - Topologically associating domain](#81---tad)
-  - [8.2 - Trans interactions between chromosomes](#82---trans---interactions)
+  - [8.2 - Trans-interactions between chromosomes](#82---trans-interactions)
 - [9 - Methylation of B chromosomes](#9---methylation-in-b-chromosomes)
   - [9.1 - Methylation detection](#91---methylation-detection)
   - [9.2 - CpGs detected in the genome](92---cpg-sites-in-the-genome)
