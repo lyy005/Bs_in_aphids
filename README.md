@@ -1,4 +1,4 @@
-# Bs_in_aphids
+<img width="468" height="13" alt="image" src="https://github.com/user-attachments/assets/ba1ddff8-48a7-4117-9661-63af843c3dea" /># Bs_in_aphids
 Pipeline for identifying supernumerary B chromosomes in sumac gall aphids
 
 Photos of the sumac galls induced by these aphids. Scale bar represents 1 cm. 
@@ -19,8 +19,8 @@ Photos of the sumac galls induced by these aphids. Scale bar represents 1 cm.
   - [2.4 - Manual curation](#24---manual-curation)
   - [2.5 - Annotation](#25---gene-annotation)
 - [3 - Quality assessment of the genome assembly](#3---quality-assessment-of-the-genome-assembly)
-  - [3.1 - Identifying Xs of *K. r. ovogallis* based on the sequencing depth of males and females](#31---identifying-xs-of-k-r-ovogallis-based-on-the-sequencing-depth-of-males-and-females)
-  - [3.2 - Identifying Xs of other species based on the genome synteny with *K. r. ovogallis*](#32---identifying-xs-of-other-species-based-on-the-genome-synteny-with-k-r-ovogallis)
+  - [3.1 - Identifying Xs of *K. r. ovogallis* based on the sequencing depth of males and females](#31---assigning-x-chromosomes-of-k-r-ovogallis-based-on-the-sequencing-depth-of-males-and-females)
+  - [3.2 - Identifying Xs of other species based on the genome synteny with *K. r. ovogallis*](#32---assigning-x-chromosomes-of-other-species-based-on-the-genome-synteny-with-k-r-ovogallis)
   - [3.3 - Telomere and rDNA annotation](#33---telomere-and-rdna-annotation)
   - [3.4 - Transposable element annotation](#34---transposable-element-annotation)
 - [4 - Phylogeny reconstruction](#4---phylogeny-reconstruction)
@@ -31,6 +31,11 @@ Photos of the sumac galls induced by these aphids. Scale bar represents 1 cm.
   - [5.1 - Divergence time between species pairs](#51---divergence-time-between-species-pairs)
   - [5.2 - Estimating intra-chromosomal rearrangement rates](#52---estimating-intra-chromosomal-rearrangement-rates)
   - [5.3 - Estimating inter-chromosomal rearrangement rates](#53---estimating-inter-chromosomal-rearrangement-rates)
+- [6 - B chromosome assembly]
+- [7 - Estimation of *dN/dS* and gene expression](#7---dnds-and-gene-expression-of-b-linked-genes)
+  - [7.1 - *dN/dS* ](#71---measuring-dnds)
+  - [7.2 - TPM](#72---estimating-tpm)
+- [8 - TAD]
 
 ## 1 - Mitochondrial genome assembly and species identification
 ### 1.1 - Quality control
@@ -587,7 +592,11 @@ perl ./step5/step6.fussion_fission.v20260407.pl step5.inter_v20260411 ./step5/X.
 
 ### 5.4 - Visualization of the rates
 
-In R, we used the follow commands to visualize the intra-chromosomal rearrangement rates:
+In R, we used the following commands to visualize the intra-chromosomal rearrangement rates:
+
+<details>
+<summary> Click to show the R script for visualization and statistical tests </summary>
+
 ```
 library(ggplot2)
 library(ggrepel)
@@ -659,9 +668,10 @@ kruskalmc(intra_noSimi_mid$rates, intra_noSimi_mid$group, alpha = 0.001)
 kruskalmc(intra_noSimi_mid$rates, intra_noSimi_mid$group, alpha = 0.0001)
 kruskalmc(intra_noSimi_mid$rates, intra_noSimi_mid$group, alpha = 0.00001)
 
-
-
 ```
+
+</details>
+
 
 ## 6 - Improving the B chromosome assembly
 To 
@@ -696,8 +706,29 @@ salmon index --keepDuplicates -t braker.cds.fa.longest -i salmon_index_keepDup -
 salmon quant -i salmon_index_keepDup -l A -1 pe.1.fq.gz -2 pe.2.fq.gz -p 10 -o salmon_quant_keepDup
 ```
 
-#### Identify Xs based on resequencing data
-To further confirm the identified Xs, we sequenced males and females of *Kaburagia rhusicola rhusicola*, 
+## 8 - 3D organization of B chromosomes
+To explore the 3D organization of Bs, we followed the steps of HiCExplorer version 3.7.6. 
+
+First, we mapped HiC reads to aphid genomes with 1 copy of each B type. To avoid multi-mapped reads, we removed reads with MAPQ < 15. Then we corrected the HiC matrix, merged to 30kb resolution, 
+```
+~/bin/bwa_v0.7.19/bwa index genome.fa
+~/bin/bwa_v0.7.19/bwa mem -A 1 -B 4 -E 50 -L 0 -t 10 genome.fa mate_R1.fastq.gz 2>>mate_R1.log | samtools view -Shb - > mate_R1.bam
+~/bin/bwa_v0.7.19/bwa mem -A 1 -B 4 -E 50 -L 0 -t 10 genome.fa mate_R2.fastq.gz 2>>mate_R2.log | samtools view -Shb - > mate_R2.bam
+
+~/bin/hicBuildMatrix --samFiles mate_R1.bam mate_R2.bam --binSize 10000 --restrictionSequence GATC --danglingSequence GATC --restrictionCutFile cut_sites.bed --threads 20 --inputBufferSize 100000 --outBam ./hicMatrix/hic.bam -o ./hicMatrix/hic_matrix.h5 --QCfolder ./hicMatrix/hicQC --minMappingQuality 15 > step2.1.log 2> step2.2.log &
+
+~/bin/hicCorrectMatrix diagnostic_plot -m hic_matrix.h5 -o hic_matrix.diagnostic_plot.pdf
+
+~/bin/hicCorrectMatrix correct -m hic_matrix.h5 -o hic_corrected.h5 --correctionMethod KR
+
+~/bin/hicFindTADs -m hic_corrected.h5 --outPrefix hic_corrected.findTADs --numberOfProcessors 16 --correctForMultipleTesting fdr
+
+# Plot TADs
+hicPlotTADs --tracks ./step8/hic_tracks.corrected.ini --region s5h1_14B:0-13788911 -o hic_corrected_30kb.hicPlotTADs.s5h1_14B.pdf
+hicPlotTADs --tracks ./step8/hic_tracks.corrected.ini --region s5h1_15B:0-12963132 -o hic_corrected_30kb.hicPlotTADs.s5h1_15B.pdf
+
+```
+
 
 #### Map HiFi reads to hifiasm scaffolds
 Using samtools version 1.21 and minimap2 version 2.28
@@ -751,7 +782,7 @@ earlGrey -g kaburagiaRhusicola.fa -s kaburagiaRhusicola -r arthropoda -o output 
 
 Then we combined all the .strained outputs:
 ```
-for i in s10h1 s10h2 s11h1 s11h2 s1 s3h1 s3h2 s4 s5h1 s5h2 s6
+for i in s10h1 s10h2 s11h1 s11h2 s1 s3h1 s3h2 s4 s5h1 s5h2 s6h1 s6h2
 do 
  echo $i
  perl add_spp_name.pl $i\.strained $i $i\.renamed.strained
@@ -774,7 +805,7 @@ earlGreyAnnotationOnly -g kaburagiaRhusicola.fa -s kaburagiaRhusicola -o output 
 ```
 
 ### 3.3 - DNA Methylation Analysis
-To identify DNA methylcations, we used pbmm2 (https://github.com/PacificBiosciences/pbmm2) and aligned_bam_to_cpg_scores version 3.0 (https://github.com/PacificBiosciences/pb-CpG-tools). 
+To identify DNA methylation, we used pbmm2 (https://github.com/PacificBiosciences/pbmm2) and aligned_bam_to_cpg_scores version 3.0 (https://github.com/PacificBiosciences/pb-CpG-tools). 
 
 ```
 conda activate pbmm2_1.17.0
