@@ -35,7 +35,8 @@ Photos of the sumac galls induced by these aphids. Scale bar represents 1 cm.
 - [7 - Estimation of *dN/dS* and gene expression](#7---dnds-and-gene-expression-of-b-linked-genes)
   - [7.1 - *dN/dS* ](#71---measuring-dnds)
   - [7.2 - TPM](#72---estimating-tpm)
-- [8 - TAD](#8---3d-organization-of-b-chromosomes)
+- [8 - 3D organization of B chromosomes](#8---3d-organization-of-b-chromosomes)
+- [9 - Methylation of B chromosomes]()
 
 ## 1 - Mitochondrial genome assembly and species identification
 ### 1.1 - Quality control
@@ -718,15 +719,96 @@ First, we mapped HiC reads to aphid genomes with 1 copy of each B type. To avoid
 ~/bin/hicBuildMatrix --samFiles mate_R1.bam mate_R2.bam --binSize 10000 --restrictionSequence GATC --danglingSequence GATC --restrictionCutFile cut_sites.bed --threads 20 --inputBufferSize 100000 --outBam ./hicMatrix/hic.bam -o ./hicMatrix/hic_matrix.h5 --QCfolder ./hicMatrix/hicQC --minMappingQuality 15 > step2.1.log 2> step2.2.log &
 
 ~/bin/hicCorrectMatrix diagnostic_plot -m hic_matrix.h5 -o hic_matrix.diagnostic_plot.pdf
-
 ~/bin/hicCorrectMatrix correct -m hic_matrix.h5 -o hic_corrected.h5 --correctionMethod KR
-
 ~/bin/hicFindTADs -m hic_corrected.h5 --outPrefix hic_corrected.findTADs --numberOfProcessors 16 --correctForMultipleTesting fdr
 
 # Plot TADs
 hicPlotTADs --tracks ./step8/hic_tracks.corrected.ini --region s5h1_14B:0-13788911 -o hic_corrected_30kb.hicPlotTADs.s5h1_14B.pdf
 hicPlotTADs --tracks ./step8/hic_tracks.corrected.ini --region s5h1_15B:0-12963132 -o hic_corrected_30kb.hicPlotTADs.s5h1_15B.pdf
 
+```
+## 9 - Methylation in B chromosomes
+To identify DNA methylation, we used pbmm2 version 1.17.0 (https://github.com/PacificBiosciences/pbmm2) and aligned_bam_to_cpg_scores version 3.0 (https://github.com/PacificBiosciences/pb-CpG-tools). We combined both haplotypes of *K. r. ensigallis* so that the sequencing depth of autosomes and Xs were similar to that of Bs. 
+
+### 9.1 - Methylation detection
+```
+pbmm2 index genome.fa genome.mmi
+pbmm2 align genome.mmi hifi_reads.bam aligned.bam --preset CCS --sort --log-level DEBUG --num-threads 20
+
+aligned_bam_to_cpg_scores --bam aligned.bam --output-prefix cpg_denovo_mapq20 --threads 20 --min-mapq 20 --modsites-mode denovo
+
+# keep CpGs with coverage >= 5
+less -S cpg_denovo_mapq20.combined.bed.gz | awk '$7 >= 5' > cpg_denovo_mapq20.coverage5.bed
+```
+
+### 9.2 - CpG sites in the genome
+Then we measured sequencing depth from the output BAM file, and only kept sites with sequencing depth >= 5. 
+
+```
+mosdepth -t 20 window_mapq20 --mapq 20 aligned.bam
+
+# mosdepth cov >= 5 bed
+less -S window_mapq20.per-base.bed.gz | awk '$4 >= 5' > window_mapq20.per-base.coverage5.bed
+
+# CpGs in the genome were extracted
+perl ./step9/make_CpG_BEDs.pl genome.fa genome.bed
+
+# the output is the BED with CpGs in genomes and with coverage >= 5 (and mapq >= 20)
+~/bin/bedtools_v2.31.0 intersect -a genome.bed -b window_mapq20.per-base.coverage5.bed -u > genome_CpG_AND_coverage5.bed
+
+```
+
+### 9.3 - Identifying exon, intron, and intergenic regions
+We combined the GFF files of both hap1 and hap2 and extracted exon, intron, and intergenic regions. Then we used bedtools to extract the CpGs in each region.
+
+```
+cat hap1.gff hap2.gff > genome.gff
+
+awk '$3 == "exon"' genome.gff | perl -ne '@a=split; $a[3] = $a[3] -1; $b=join "\t", @a; print "$a[0]\t$a[3]\t$a[4]\n"; ' > annotation.exon.bed
+
+# find gene BEDs
+awk '$3 == "gene"' genome.gff | perl -ne '@a=split; $a[3] = $a[3] -1; $b=join "\t", @a; print "$a[0]\t$a[3]\t$a[4]\n"; ' > annotation.gene.bed
+
+# merge windows
+## exon
+~/bin/bedtools_v2.31.0 sort -i annotation.exon.bed > annotation.exon.bed.sorted
+~/bin/bedtools_v2.31.0 merge -i annotation.exon.bed.sorted > annotation.exon.bed.sorted.merged
+
+# gene
+~/bin/bedtools_v2.31.0 sort -i annotation.gene.bed > annotation.gene.bed.sorted
+~/bin/bedtools_v2.31.0 merge -i annotation.gene.bed.sorted > annotation.gene.bed.sorted.merged
+
+# HiFi CpG
+## exons
+~/bin/bedtools_v2.31.0 intersect -a cpg_denovo_mapq20.coverage5.bed -b annotation.exon.bed.sorted.merged -u > hifi_CpG.exon.bed
+
+## gene
+~/binbedtools_v2.31.0 intersect -a cpg_denovo_mapq20.coverage5.bed -b annotation.gene.bed.sorted.merged -u > hifi_CpG.gene.bed
+
+## intron: within gene but not in exon
+~/bin/bedtools_v2.31.0 intersect -a hifi_CpG.gene.bed -b annotation.exon.bed.sorted.merged -v > hifi_CpG.intron.bed
+
+## intergenic: not in gene
+~/bin/bedtools_v2.31.0 intersect -a cpg_denovo_mapq20.coverage5.bed -b annotation.gene.bed.sorted.merged -v > hifi_CpG.intergenic.bed
+
+# genome CpGs
+## exons
+~/bin/bedtools_v2.31.0 intersect -a genome_CpG_AND_coverage5.bed -b annotation.exon.bed.sorted.merged -u > genome_CpG.exon.bed
+
+## gene
+~/bin/bedtools_v2.31.0 intersect -a genome_CpG_AND_coverage5.bed -b annotation.gene.bed.sorted.merged -u > genome_CpG.gene.bed
+
+## intron: within gene but not in exon
+~/bin/bedtools_v2.31.0 intersect -a genome_CpG.gene.bed -b annotation.exon.bed.sorted.merged -v > genome_CpG.intron.bed
+
+## intergenic
+~/bin/bedtools_v2.31.0 intersect -a genome_CpG_AND_coverage5.bed -b annotation.gene.bed.sorted.merged -v > genome_CpG.intergenic.bed
+
+for i in exon gene intron intergenic
+do
+ echo $i
+ cut -f 1 genome_CpG.$i\.bed | sort | uniq -c > genome_CpG.$i\.each_chr.table
+done
 ```
 
 
@@ -804,59 +886,7 @@ conda activate earlgrey_v6.3.2
 earlGreyAnnotationOnly -g kaburagiaRhusicola.fa -s kaburagiaRhusicola -o output -t 20 -l combined.renamed.strained.easyCluster_rep_seq.fasta
 ```
 
-### 3.3 - DNA Methylation Analysis
-To identify DNA methylation, we used pbmm2 (https://github.com/PacificBiosciences/pbmm2) and aligned_bam_to_cpg_scores version 3.0 (https://github.com/PacificBiosciences/pb-CpG-tools). 
 
-```
-conda activate pbmm2_1.17.0
-
-pbmm2 index genome.fa genome.mmi
-pbmm2 align genome.mmi hifi_reads.bam aligned.bam --preset CCS --sort --log-level DEBUG --num-threads 20
-
-aligned_bam_to_cpg_scores --bam aligned.bam --output-prefix cpg_denovo --threads 20 --modsites-mode denovo --ref genome.fa
-```
-
-### 3.4 - TAD
-
-```
-step0 - mapping
-conda activate hicexplorer_v3.7.6
-
-bwa mem -A 1 -B 4 -E 50 -L 0 -t 40 genome.fa mate_R1.fastq.gz 2>>mate_R1.log | samtools view -Shb - > mate_R1.bam
-bwa mem -A 1 -B 4 -E 50 -L 0 -t 40 genome.fa mate_R2.fastq.gz 2>>mate_R2.log | samtools view -Shb - > mate_R2.bam
-hicBuildMatrix --samFiles mate_R1.bam mate_R2.bam \
-               --binSize 10000 \
-               --restrictionSequence GATC \
-               --danglingSequence GATC \
-               --restrictionCutFile cut_sites.bed \
-               --threads 40 \
-               --inputBufferSize 100000 \
-               --outBam ./hicMatrix/hic.bam \
-               -o ./hicMatrix/hic_matrix.h5 \
-               --QCfolder ./hicMatrix/hicQC \
-               --minMappingQuality 15
-
-# step1 - correction
-hicCorrectMatrix diagnostic_plot -m hic_matrix.h5 --perchr -o hic_matrix.diagnostic_plot.pdf
-
-hicCorrectMatrix correct -m hic_matrix.h5 -o hic_KRcorrected.h5 --correctionMethod KR
-hicCorrectMatrix diagnostic_plot -m hic_KRcorrected.h5 --perchr -o hic_KRcorrected.diagnostic_plot.pdf
-
-## change resolution from 10kb to 30kb
-hicMergeMatrixBins --matrix hic_KRcorrected.h5 --outFileName hic_KRcorrected_30kb.h5 --numBins 3
-
-# step2 - cis vs trans
-hicConvertFormat --matrices hic_KRcorrected_30kb.h5 --inputFormat h5 --outputFormat ginteractions --outFileName hic_KRcorrected_30kb.ginteractions
-
-## filter interactions with counts >= 3
-less -S hic_KRcorrected_30kb.ginteractions.tsv | awk '$7 >= 3' | cut -f 1,4 | sort | uniq -c > hic_KRcorrected_30kb.ginteractions.counts
-
-for i in B1 B2 B3 B4 B5
-do
- perl step3_add_length.pl hic_KRcorrected_30kb.ginteractions.counts genome.fa.length $i hic_KRcorrected_30kb.ginteractions.$i\.counts
-done
-
-```
 
 
 
