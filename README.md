@@ -40,7 +40,7 @@ Photos of the sumac galls induced by these aphids. Scale bar represents 1 cm.
   - [7.2 - TPM](#72---estimating-tpm)
 - [8 - 3D organization of B chromosomes](#8---3d-organization-of-b-chromosomes)
   - [8.1 - Topologically associating domain](#81---tad)
-  - [8.2 - Trans interactions between chromosomes](#82---trans-interactions)
+  - [8.2 - Trans interactions between chromosomes](#82---trans---interactions)
 - [9 - Methylation of B chromosomes](#9---methylation-in-b-chromosomes)
   - [9.1 - Methylation detection](#91---methylation-detection)
   - [9.2 - CpGs detected in the genome](92---cpg-sites-in-the-genome)
@@ -749,7 +749,7 @@ hicPlotTADs --tracks ./step8/hic_tracks.corrected.ini --region s5h1_14B:0-137889
 hicPlotTADs --tracks ./step8/hic_tracks.corrected.ini --region s5h1_15B:0-12963132 -o hic_corrected_30kb.hicPlotTADs.s5h1_15B.pdf
 
 ```
-### 8.2 - cis interactions
+### 8.2 - trans-interactions
 We calculated the average of interactions between Bs and As (autosomes and Xs) using cooltools version 0.7.1. 
 
 ```
