@@ -730,17 +730,19 @@ salmon quant -i salmon_index_keepDup -l A -1 pe.1.fq.gz -2 pe.2.fq.gz -p 10 -o s
 ### 8.1 - TAD
 To explore the 3D organization of Bs, we followed the steps of HiCExplorer version 3.7.6. 
 
-First, we mapped HiC reads to aphid genomes with 1 copy of each B type. To avoid multi-mapped reads, we removed reads with MAPQ < 15. Then we corrected the HiC matrix, merged to 30kb resolution, 
+First, we mapped HiC reads to aphid genomes with 1 copy of each B type. To avoid multi-mapped reads, we removed reads with MAPQ < 15. Then we corrected the HiC matrix, merged to 30kb resolution, and identified TADs:
 ```
 ~/bin/bwa_v0.7.19/bwa index genome.fa
 ~/bin/bwa_v0.7.19/bwa mem -A 1 -B 4 -E 50 -L 0 -t 10 genome.fa mate_R1.fastq.gz 2>>mate_R1.log | samtools view -Shb - > mate_R1.bam
 ~/bin/bwa_v0.7.19/bwa mem -A 1 -B 4 -E 50 -L 0 -t 10 genome.fa mate_R2.fastq.gz 2>>mate_R2.log | samtools view -Shb - > mate_R2.bam
 
-~/bin/hicBuildMatrix --samFiles mate_R1.bam mate_R2.bam --binSize 10000 --restrictionSequence GATC --danglingSequence GATC --restrictionCutFile cut_sites.bed --threads 20 --inputBufferSize 100000 --outBam ./hicMatrix/hic.bam -o ./hicMatrix/hic_matrix.h5 --QCfolder ./hicMatrix/hicQC --minMappingQuality 15 > step2.1.log 2> step2.2.log &
+hicBuildMatrix --samFiles mate_R1.bam mate_R2.bam --binSize 10000 --restrictionSequence GATC --danglingSequence GATC --restrictionCutFile cut_sites.bed --threads 20 --inputBufferSize 100000 --outBam ./hicMatrix/hic.bam -o ./hicMatrix/hic_matrix.h5 --QCfolder ./hicMatrix/hicQC --minMappingQuality 15 > step2.1.log 2> step2.2.log &
 
-~/bin/hicCorrectMatrix diagnostic_plot -m hic_matrix.h5 -o hic_matrix.diagnostic_plot.pdf
-~/bin/hicCorrectMatrix correct -m hic_matrix.h5 -o hic_corrected.h5 --correctionMethod KR
-~/bin/hicFindTADs -m hic_corrected.h5 --outPrefix hic_corrected.findTADs --numberOfProcessors 16 --correctForMultipleTesting fdr
+hicCorrectMatrix diagnostic_plot -m hic_matrix.h5 -o hic_matrix.diagnostic_plot.pdf
+hicCorrectMatrix correct -m hic_matrix.h5 -o hic_corrected.h5 --correctionMethod KR
+
+hicMergeMatrixBins --matrix hic_corrected.h5 --outFileName hic_corrected_30kb.h5 --numBins 3
+hicFindTADs -m hic_corrected_30kb.h5 --outPrefix hic_corrected_30kb.findTADs --numberOfProcessors 16 --correctForMultipleTesting fdr
 
 # Plot TADs
 hicPlotTADs --tracks ./step8/hic_tracks.corrected.ini --region s5h1_14B:0-13788911 -o hic_corrected_30kb.hicPlotTADs.s5h1_14B.pdf
