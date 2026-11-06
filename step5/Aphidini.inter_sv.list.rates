@@ -1,0 +1,16 @@
+spp	time	Interchr_block_rate	Interchr_block_rate_AtoA	Interchr_block_rate_XtoX	Interchr_block_rate_AtoX	Avg_number_of_breaks_perMb	Avg_number_of_breaks_perMb_AtoA	Avg_number_of_breaks_perMb_XtoX	Avg_number_of_breaks_perMb_AtoX	inter_rate	Interchr_block_rate_perMY	Interchr_block_rate_AtoA_perMY	Interchr_block_rate_XtoX_perMY	Interchr_block_rate_AtoX_perMY	Avg_number_of_breaks_perMb_perMY	Avg_number_of_breaks_perMb_AtoA_perMY	Avg_number_of_breaks_perMb_XtoX_perMY	Avg_number_of_breaks_perMb_AtoX_perMY	inter_rate_perMY
+Apfa_Apgo	3.548275	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0
+Apfa_Mesa	13.7899325	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0
+Apfa_Rhma	12.3713415	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0
+Apfa_Rhpa	12.3713415	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0
+Apgo_Mesa	13.7899325	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0
+Apgo_Rhma	12.3713415	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0
+Apgo_Rhpa	12.3713415	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0
+ApJI_Apfa	3.548275	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0
+ApJI_Apgo	0.42009	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0
+ApJI_Mesa	13.7899325	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0
+ApJI_Rhma	12.3713415	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0
+ApJI_Rhpa	12.3713415	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0
+Mesa_Rhma	13.789932	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0
+Mesa_Rhpa	13.789932	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0
+Rhma_Rhpa	2.726022	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0
