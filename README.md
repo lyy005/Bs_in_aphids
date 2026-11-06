@@ -675,7 +675,7 @@ intra_noSimi_noChov_nos4 %>%
 intra_noSimi_noChov_nos4_mid$group = factor(intra_noSimi_noChov_nos4_mid$group, levels = c("Adelgidae", "Fordini", "Aphidini", "Macrosiphini"))
 p_intra <- ggplot(data = intra_noSimi_noChov_nos4_mid, aes(x = group, y = rates, group = group, color = group)) +
 			geom_violin(aes(color = group)) +
-			geom_point(position = position_jitter(seed = 1, width = 0.2)) +
+			geom_point(position = position_jitter(seed = 1, width = 0.2, height = 0)) +
 			theme(legend.position = "none") +
 			theme_bw() +
 			geom_label_repel(aes(label = spp),
@@ -692,7 +692,7 @@ p_intra <- ggplot(data = intra_noSimi_noChov_nos4_mid, aes(x = group, y = rates,
 				axis.text.y = element_text(size = 15), 
 				axis.title.y = element_text(size = 15)
 			) +
-			xlab('Taxonomic groups') + ylab('Rearrangement rates') # + ggtitle('Sequencing depth')
+			xlab('Taxonomic groups') + ylab('Intra-chr rearrangement rates') # + ggtitle('Sequencing depth')
 
 # 1.4 - kruskal-wallis tests
 kruskal.test(rates ~ group, data = intra_noSimi_noChov_nos4_mid)
@@ -759,9 +759,9 @@ inter_noSimi_noChov_nos4_mid <- subset(inter_noSimi_noChov_nos4, time >= 10 & ti
 inter_noSimi_noChov_nos4 %>% 
   group_by(group) %>%
   summarise(
-    median = median(Avg_number_of_breaks_perMb_perMY, na.rm = TRUE),
-    Q1 = quantile(Avg_number_of_breaks_perMb_perMY, 0.25, na.rm = TRUE), 
-    Q3 = quantile(Avg_number_of_breaks_perMb_perMY, 0.75, na.rm = TRUE)
+    median = median(inter_rate_perMY, na.rm = TRUE),
+    Q1 = quantile(inter_rate_perMY, 0.25, na.rm = TRUE), 
+    Q3 = quantile(inter_rate_perMY, 0.75, na.rm = TRUE)
   )
 
 # 2.3 - violin plot
@@ -770,9 +770,9 @@ inter_noSimi_noChov_nos4_mid$group = factor(inter_noSimi_noChov_nos4_mid$group,
                                                        "Fordini", "Aphidini", "Macrosiphini"))
 
 (
-  p_inter <- ggplot(data = inter_noSimi_noChov_nos4_mid, aes(x = group, y = Interchr_block_rate_perMY, group = group, color = group)) +
+  p_inter <- ggplot(data = inter_noSimi_noChov_nos4_mid, aes(x = group, y = inter_rate_perMY, group = group, color = group)) +
   geom_violin(aes(color = group)) + 
-  geom_point(position = position_jitter(seed = 1, width = 0.2)) +
+  geom_point(position = position_jitter(seed = 1, width = 0.2, height = 0)) +
   theme(legend.position = "none") + 
   theme_bw() + 
         # geom_label_repel(aes(label = spp),
@@ -799,10 +799,10 @@ inter_noSimi_noChov_nos4_mid$group = factor(inter_noSimi_noChov_nos4_mid$group,
 # 2.4 - kruskal-wallis test
 library(FSA)
 
-kruskal.test(Interchr_block_rate_perMY ~ group, data = inter_noSimi_noChov_nos4)
+kruskal.test(inter_rate_perMY ~ group, data = inter_noSimi_noChov_nos4)
 
 dunnTest(
-  Interchr_block_rate_perMY ~ group,
+  inter_rate_perMY ~ group,
   data = inter_noSimi_noChov_nos4,
   method = "bh"
 )
