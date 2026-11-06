@@ -619,6 +619,7 @@ In R, we used the following commands to visualize the intra-chromosomal rearrang
 
 ```
 # 1 - intra-chr rates
+# 1.1 - read tables
 library(ggplot2)
 library(ggrepel)
 
@@ -655,7 +656,10 @@ intra_noSimi <- intra_combined_ingroup[!grepl("Simi", intra_combined_ingroup$spp
 intra_noSimi_noChov <- intra_noSimi[!grepl("Chov", intra_noSimi$spp), ]
 intra_noSimi_noChov_nos4 <- intra_noSimi_noChov[!grepl("s4", intra_noSimi_noChov$spp), ]
 
-# 1.1 estimate statistics
+# divergence time between 10 to 35 MYA
+intra_noSimi_noChov_nos4_mid <- subset(intra_noSimi_noChov_nos4, time >= 10 & time <= 35)
+
+# 1.2 estimate statistics
 library(dplyr)
 
 # the rate is number of intra-chr rearrangements per Mb per MY
@@ -667,9 +671,9 @@ intra_noSimi_noChov_nos4 %>%
     Q3 = quantile(rates, 0.75, na.rm = TRUE)
   )
 
-# violin plot
-intra_noSimi_mid$group = factor(intra_noSimi_mid$group, levels = c("Adelgidae", "Fordini", "Aphidini", "Macrosiphini"))
-p_intra <- ggplot(data = intra_noSimi_mid, aes(x = group, y = rates, group = group, color = group)) +
+# 1.3 - violin plot
+intra_noSimi_noChov_nos4_mid$group = factor(intra_noSimi_noChov_nos4_mid$group, levels = c("Adelgidae", "Fordini", "Aphidini", "Macrosiphini"))
+p_intra <- ggplot(data = intra_noSimi_noChov_nos4_mid, aes(x = group, y = rates, group = group, color = group)) +
 			geom_violin(aes(color = group)) +
 			geom_point(position = position_jitter(seed = 1, width = 0.2)) +
 			theme(legend.position = "none") +
@@ -690,18 +694,118 @@ p_intra <- ggplot(data = intra_noSimi_mid, aes(x = group, y = rates, group = gro
 			) +
 			xlab('Taxonomic groups') + ylab('Rearrangement rates') # + ggtitle('Sequencing depth')
 
-# kruskal-wallis tests
+# 1.4 - kruskal-wallis tests
+kruskal.test(rates ~ group, data = intra_noSimi_noChov_nos4_mid)
 
-library(pgirmess)
+library(FSA)
 
-kruskal.test(rates ~ group, data = intra_noSimi_mid)
+dunnTest(
+  rates ~ group,
+  data = intra_noSimi_noChov_nos4_mid,
+  method = "bh"
+)
 
-kruskalmc(intra_noSimi_mid$rates, intra_noSimi_mid$group, alpha = 0.05)
-kruskalmc(intra_noSimi_mid$rates, intra_noSimi_mid$group, alpha = 0.01)
-kruskalmc(intra_noSimi_mid$rates, intra_noSimi_mid$group, alpha = 0.001)
-kruskalmc(intra_noSimi_mid$rates, intra_noSimi_mid$group, alpha = 0.0001)
-kruskalmc(intra_noSimi_mid$rates, intra_noSimi_mid$group, alpha = 0.00001)
+# 2 - inter-chr rates
+library(ggplot2)
+library(ggrepel)
 
+inter_Adelgidae <- read.table('./step5/Adelgidae.inter_sv.list.rates', header = T)
+inter_Adelgidae$group = "Adelgidae"
+head(inter_Adelgidae)
+
+inter_Aphidinae <- read.table('./step5/Aphidinae.inter_sv.list.rates', header = T)
+inter_Aphidinae$group = "Aphidinae"
+head(inter_Aphidinae)
+
+inter_Aphidini <- read.table('./step5/Aphidini.inter_sv.list.rates', header = T)
+inter_Aphidini$group = "Aphidini"
+head(inter_Aphidini)
+
+inter_Fordini <- read.table('./step5/Fordini.inter_sv.list.rates', header = T)
+inter_Fordini$group = "Fordini"
+head(inter_Fordini)
+
+inter_Macrosiphini <- read.table('./step5/Macrosiphini.inter_sv.list.rates', header = T)
+inter_Macrosiphini$group = "Macrosiphini"
+head(inter_Macrosiphini)
+
+# outgroups
+inter_Delphacinae <- read.table('./step5/Delphacinae.inter_sv.list.rates', header = T)
+inter_Delphacinae$group = "Delphacinae"
+head(inter_Delphacinae)
+
+
+inter_Psylloidea <- read.table('./step5/Psylloidea.inter_sv.list.rates', header = T)
+inter_Psylloidea$group = "Psylloidea"
+head(inter_Psylloidea)
+
+inter_Triatominae <- read.table('./step5/Triatominae.inter_sv.list.rates', header = T)
+inter_Triatominae$group = "Triatominae"
+head(inter_Triatominae)
+
+inter_combined <- rbind(inter_Adelgidae,inter_Aphidini, inter_Fordini, inter_Macrosiphini, 
+                        inter_Delphacinae, inter_Psylloidea, inter_Triatominae)
+
+# exclude a few species
+inter_noSimi <- inter_combined[!grepl("Simi", inter_combined$spp), ]
+inter_noSimi_noChov <- inter_noSimi[!grepl("Chov", inter_noSimi$spp), ]
+inter_noSimi_noChov_nos4 <- inter_noSimi_noChov[!grepl("s4", inter_noSimi_noChov$spp), ]
+
+# divergence time between 10 - 35 MYA
+inter_noSimi_noChov_nos4_mid <- subset(inter_noSimi_noChov_nos4, time >= 10 & time <= 35)
+
+# 2.2 - estimate statistics
+# the inter-chr rate is the number of intra-chr rearrangements per Mb per MY
+inter_noSimi_noChov_nos4 %>% 
+  group_by(group) %>%
+  summarise(
+    median = median(Avg_number_of_breaks_perMb_perMY, na.rm = TRUE),
+    Q1 = quantile(Avg_number_of_breaks_perMb_perMY, 0.25, na.rm = TRUE), 
+    Q3 = quantile(Avg_number_of_breaks_perMb_perMY, 0.75, na.rm = TRUE)
+  )
+
+# 2.3 - violin plot
+inter_noSimi_noChov_nos4_mid$group = factor(inter_noSimi_noChov_nos4_mid$group, 
+                                            levels = c("Delphacinae", "Adelgidae", 
+                                                       "Fordini", "Aphidini", "Macrosiphini"))
+
+(
+  p_inter <- ggplot(data = inter_noSimi_noChov_nos4_mid, aes(x = group, y = Interchr_block_rate_perMY, group = group, color = group)) +
+  geom_violin(aes(color = group)) + 
+  geom_point(position = position_jitter(seed = 1, width = 0.2)) +
+  theme(legend.position = "none") + 
+  theme_bw() + 
+        # geom_label_repel(aes(label = spp),
+        #            max.overlaps = 200,
+        #            box.padding   = 0.35,
+        #            point.padding = 0.5,
+        #            segment.color = 'grey50') +
+  theme(#strip.text.y=element_text(angle=180, size=15),
+        #strip.text.x=element_text(angle=180, size=8),
+        #legend.position=c(.99,.01), legend.justification=c(1,0),
+        plot.title = element_text(hjust = 0.5, size = 15, face = "bold"), 
+        # plot.title = element_text(size = 40, )
+        legend.position= "none",
+        strip.background=element_blank(),
+        axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1, size = 15, color = "black"),
+        axis.title.x = element_text(size = 15), 
+        axis.text.y = element_text(size = 15), 
+        axis.title.y = element_text(size = 15), 
+        #axis.text.y=element_blank(), axis.ticks.y=element_blank()
+        ) + 
+    xlab('Taxonomic groups') + ylab('Inter-chromosomal rearrangement rates per MY') # + ggtitle('Sequencing depth')
+)
+
+# 2.4 - kruskal-wallis test
+library(FSA)
+
+kruskal.test(Interchr_block_rate_perMY ~ group, data = inter_noSimi_noChov_nos4)
+
+dunnTest(
+  Interchr_block_rate_perMY ~ group,
+  data = inter_noSimi_noChov_nos4,
+  method = "bh"
+)
 ```
 
 </details>
