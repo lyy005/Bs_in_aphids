@@ -618,6 +618,7 @@ In R, we used the following commands to visualize the intra-chromosomal rearrang
 <summary> Click to show the R script for visualization and statistical tests </summary>
 
 ```
+# 1 - intra-chr rates
 library(ggplot2)
 library(ggrepel)
 
@@ -646,12 +647,25 @@ intra_Psylloidea$group = "Psylloidea"
 intra_Triatominae <- read.table('./step5/Triatominae.intra_sv.list.rates', header = T)
 intra_Triatominae$group = "Triatominae"
 
-intra_combined <- rbind(intra_Adelgidae,intra_Aphidini, intra_Fordini, intra_Macrosiphini, 
-                        intra_Delphacinae, intra_Psylloidea, intra_Triatominae)
+# exclude a few species
+intra_combined_ingroup <- rbind(intra_Adelgidae,intra_Aphidini, intra_Fordini, intra_Macrosiphini)
 
-# remove Sitobion miscanthi
 intra_noSimi <- intra_combined_ingroup[!grepl("Simi", intra_combined_ingroup$spp), ]
-intra_noSimi_mid <- subset(intra_noSimi, time >= 10 & time <= 35)
+
+intra_noSimi_noChov <- intra_noSimi[!grepl("Chov", intra_noSimi$spp), ]
+intra_noSimi_noChov_nos4 <- intra_noSimi_noChov[!grepl("s4", intra_noSimi_noChov$spp), ]
+
+# 1.1 estimate statistics
+library(dplyr)
+
+# the rate is number of intra-chr rearrangements per Mb per MY
+intra_noSimi_noChov_nos4 %>% 
+  group_by(group) %>%
+  summarise(
+    median = median(rates, na.rm = TRUE),
+    Q1 = quantile(rates, 0.25, na.rm = TRUE), 
+    Q3 = quantile(rates, 0.75, na.rm = TRUE)
+  )
 
 # violin plot
 intra_noSimi_mid$group = factor(intra_noSimi_mid$group, levels = c("Adelgidae", "Fordini", "Aphidini", "Macrosiphini"))
