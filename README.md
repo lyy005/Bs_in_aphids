@@ -812,9 +812,9 @@ dunnTest(
 
 
 ## 6 - Improving the B chromosome assembly
-To improve the assembly of B chromosomes, we joined B scaffolds based on four lines of evidence: (1) hifiasm assembly of B-derived reads, (2) assembly graph of Verkko, (3) HiC contact map, and (4) genome synteny. 
+To improve the assembly of B chromosomes, we joined B scaffolds based on four lines of evidence: (1) hifiasm assemblies of B-derived reads, (2) assembly graphs of Verkko, (3) HiC contact maps, and (4) genome syntenies. A joining was made if three out of four lines of evidence supported such connection. 
 
-### 6.1 - Joining based on hifiasm assembly of B-derived reads
+### 6.1 - Joining based on hifiasm assemblies of B-derived reads
 We aligned HiFi reads to the original assembly and extracted HiFi reads that did not map to autosomes or Xs. We assigned these reads as putative B-derived reads. We only assembled these B-derived reads using hifiasm to simplify the assembly process. We aligned the original B scaffolds to the B-derived scaffolds. If the B-derived assembly connected two B scaffolds from the original assembly, we treated this connection as supported by B-derived hifiasm evidence. 
 
 ```
@@ -830,7 +830,7 @@ samtools fastq B_reads.bam | gzip > B_reads.fastq.gz
 
 ```
 
-Then assemble the reads and find joins connect two B-derived scaffolds using minimap2:
+Then assemble the reads and find joins that connect two B-derived scaffolds using minimap2:
 ```
 ~/bin/minimap2-2.28_x64-linux/minimap2 -o ccs --dual-scaf --telo-m CCTAA --primary -t 40 B_reads.fastq.gz
 awk '/^S/{print ">"$2;print $3}' ccs.p_ctg.gfa > ccs.p_ctg.fa
@@ -838,6 +838,21 @@ awk '/^S/{print ">"$2;print $3}' ccs.p_ctg.gfa > ccs.p_ctg.fa
 ~/bin/minimap2-2.28_x64-linux/minimap2 -c -x asm5 -t 20 genome.B.fa assembly.fasta > verkko_vs_hifiasm.asm5_CIGAR.paf
 ```
 
+### 6.2 - Joining based on the assembly graphs of Verkko
+We assembled B-derived reads with Verkko version 2.2.1. We then aligned the original hifiasm B scaffolds to the assembly graph using GraphAligner version 1.0.20. If the assembly graph connected two B scaffolds, we treated the connection as supported by the Verkko assembly graph
+
+```
+verkko -d run1_asm --hifi B_reads.fastq.gz --telomere-motif CCTAA
+GraphAligner -g assembly.homopolymer-compressed.gfa -f genome.B.fa -a genome.B.graph_aligner.dbg.gaf -x dbg --threads 10
+cat genome.B.graph_aligner.dbg.gaf | awk '($11 > 100000)&&($12 >= 60)' | sort -k3,3n > genome.B.graph_aligner.dbg.gaf.filtered
+
+```
+
+### 6.3 - Joining based on HiC contact maps
+Thirdly, if HiC maps suggested contacts between two scaffolds, we treated the joining as supported by HiC signals. The steps we used to make HiC contact maps can be found in the Manual curation section [2.4](#24---manual-curation). 
+
+### 6.4 - Joining based on genome syntenies
+Lastly, if other complete Bs showed synteny of two fragmented B scaffolds, we treated the joining as supported by synteny. The steps we used to make genome synteny can be found in section [3.2](#32---assigning-x-chromosomes-of-other-species-based-on-the-genome-synteny-with-k-r-ovogallis). 
 
 ## 7 - *dN/dS* and gene expression of B-linked genes
 ### 7.1 - Measuring *dN/dS*
