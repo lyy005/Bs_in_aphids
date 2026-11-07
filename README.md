@@ -49,7 +49,7 @@ Photos of the sumac galls induced by these aphids. Scale bar represents 1 cm.
   - [9.1 - Methylation detection](#91---methylation-detection)
   - [9.2 - CpGs detected in the genome](#92---cpg-sites-in-the-genome)
   - [9.3 - Exon, intron, and intergenic regions](#93---identifying-exon-intron-and-intergenic-regions)
-  - [9.4 - Summarization and visualization of CpGs](94---summarization-and-visualization-of-cpgs)
+  - [9.4 - Summarization and visualization of CpGs](#94---summarization-and-visualization-of-cpgs)
 
 ## 1 - Mitochondrial genome assembly and species identification
 ### 1.1 - Quality control
