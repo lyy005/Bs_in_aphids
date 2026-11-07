@@ -812,7 +812,31 @@ dunnTest(
 
 
 ## 6 - Improving the B chromosome assembly
-To 
+To improve the assembly of B chromosomes, we joined B scaffolds based on four lines of evidence: (1) hifiasm assembly of B-derived reads, (2) assembly graph of Verkko, (3) HiC contact map, and (4) genome synteny. 
+
+### 6.1 - Joining based on hifiasm assembly of B-derived reads
+We aligned HiFi reads to the original assembly and extracted HiFi reads that did not map to autosomes or Xs. We assigned these reads as putative B-derived reads. We only assembled these B-derived reads using hifiasm to simplify the assembly process. We aligned the original B scaffolds to the B-derived scaffolds. If the B-derived assembly connected two B scaffolds from the original assembly, we treated this connection as supported by B-derived hifiasm evidence. 
+
+```
+minimap2 -a genome.fa -o genome.sam -t 20 -x map-hifi hifi.filt.fastq.gz
+samtools view -h -b -S genome.sam -o genome.bam --threads 20
+samtools sort genome.bam -o genome.sorted.bam --threads 20
+samtools index genome.sorted.bam
+
+# example: h1tg000021l ... h2tg000129l are the scaffolds that are not scaffold-level
+samtools view -bS genome.sorted.bam -o B_reads.bam h1tg000021l h1tg000016l h1tg000020l h1tg000046l h1tg000011l h1tg000025l h1tg000018l h1tg000026l h1tg000034l h1tg000031l h1tg000022l h1tg000029l h1tg000028l h1tg000040l h1tg000038l h1tg000043l h1tg000037l h1tg000041l h1tg000017l h1tg000035l h1tg000023l h1tg000062l h1tg000036l h1tg000058l h1tg000068l h1tg000047l h1tg000056l h1tg000027l h1tg000061l h1tg000033l h1tg000039l h1tg000059l h1tg000052l h1tg000067l h1tg000072l h1tg000070l h1tg000014l h1tg000054l h1tg000051l h1tg000032l h1tg000045l h1tg000071l h1tg000079l h1tg000055l h1tg000064l h1tg000065l h1tg000049l h1tg000084l h1tg000030l h1tg000085l h1tg000050l h1tg000075l h1tg000063l h1tg000078l h1tg000042l h1tg000073l h1tg000066l h1tg000074l h1tg000091l h1tg000069l h1tg000081l h1tg000044l h1tg000060l h1tg000057l h1tg000076l h1tg000053l h1tg000088l h1tg000024l h1tg000089l h1tg000082l h1tg000092l h1tg000090l h1tg000087l h1tg000083l h1tg000048l h1tg000086l h1tg000077l h1tg000080l h2tg000001l h2tg000057l h2tg000012l h2tg000003l h2tg000009l h2tg000026l h2tg000039l h2tg000029l h2tg000014l h2tg000033l h2tg000031l h2tg000046l h2tg000059l h2tg000069l h2tg000061l h2tg000017l h2tg000025l h2tg000086l h2tg000011l h2tg000064l h2tg000018l h2tg000038l h2tg000034l h2tg000036l h2tg000068l h2tg000021l h2tg000053l h2tg000037l h2tg000035l h2tg000098l h2tg000058l h2tg000041l h2tg000056l h2tg000051l h2tg000062l h2tg000072l h2tg000042l h2tg000043l h2tg000075l h2tg000063l h2tg000048l h2tg000097l h2tg000084l h2tg000013l h2tg000079l h2tg000032l h2tg000047l h2tg000085l h2tg000082l h2tg000078l h2tg000045l h2tg000066l h2tg000090l h2tg000077l h2tg000054l h2tg000016l h2tg000091l h2tg000081l h2tg000067l h2tg000092l h2tg000055l h2tg000107l h2tg000112l h2tg000071l h2tg000116l h2tg000060l h2tg000106l h2tg000094l h2tg000052l h2tg000050l h2tg000065l h2tg000099l h2tg000040l h2tg000088l h2tg000101l h2tg000117l h2tg000074l h2tg000105l h2tg000093l h2tg000073l h2tg000108l h2tg000118l h2tg000110l h2tg000124l h2tg000049l h2tg000125l h2tg000076l h2tg000119l h2tg000104l h2tg000120l h2tg000083l h2tg000089l h2tg000115l h2tg000044l h2tg000070l h2tg000114l h2tg000095l h2tg000096l h2tg000087l h2tg000080l h2tg000113l h2tg000102l h2tg000109l h2tg000103l h2tg000019l h2tg000100l h2tg000123l h2tg000030l h2tg000126l h2tg000130l h2tg000128l h2tg000121l h2tg000122l h2tg000127l h2tg000131l h2tg000111l h2tg000129l --threads 20
+
+samtools fastq B_reads.bam | gzip > B_reads.fastq.gz
+
+```
+
+Then assemble the reads and find joins connect two B-derived scaffolds using minimap2:
+```
+~/bin/minimap2-2.28_x64-linux/minimap2 -o ccs --dual-scaf --telo-m CCTAA --primary -t 40 B_reads.fastq.gz
+awk '/^S/{print ">"$2;print $3}' ccs.p_ctg.gfa > ccs.p_ctg.fa
+
+~/bin/minimap2-2.28_x64-linux/minimap2 -c -x asm5 -t 20 genome.B.fa assembly.fasta > verkko_vs_hifiasm.asm5_CIGAR.paf
+```
 
 
 ## 7 - *dN/dS* and gene expression of B-linked genes
