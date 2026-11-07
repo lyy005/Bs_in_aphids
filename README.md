@@ -27,7 +27,7 @@ Photos of the sumac galls induced by these aphids. Scale bar represents 1 cm.
   - [3.2 - Identifying Xs of other species based on the genome synteny with *K. r. ovogallis*](#32---assigning-x-chromosomes-of-other-species-based-on-the-genome-synteny-with-k-r-ovogallis)
 - [4 - Phylogeny reconstruction](#4---phylogeny-reconstruction)
   - [4.1 - OrthoFinder](#41---ortholog-inference)
-  - [4.2 - Phylogenetic tree reconstruction](#42---phylogenetic-tree-reconstruction)
+  - [4.2 - Phylogenetic tree reconstruction](#42---phylogenetic-tree-construction)
   - [4.3 - Divergence time estimation](#43---divergence-time-estimation)
 - [5 - Chromosomal rearrangement rate estimation](#5---chromosomal-rearrangement-rate-estimation)
   - [5.1 - Divergence time between species pairs](#51---divergence-time-between-species-pairs)
