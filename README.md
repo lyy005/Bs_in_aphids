@@ -859,6 +859,13 @@ Thirdly, if HiC maps suggested contacts between two scaffolds, we treated the jo
 ### 6.4 - Joining based on genome synteny
 Lastly, if other complete Bs showed synteny of two fragmented B scaffolds, we treated the joining as supported by synteny. The steps we used to make genome synteny can be found in section [3.2](#32---assigning-x-chromosomes-of-other-species-based-on-the-genome-synteny-with-k-r-ovogallis). 
 
+### 6.5 - Classifying types of Bs
+To classify different types of Bs, we calculated the average nucleotide identity using FastANI version 1.34 (Jain et al. 2018). 
+
+```
+~/bin/fastani_v1.34/fastANI --ql genome.list --rl genome.list -o genome.fastANI.out
+```
+
 ## 7 - *dN/dS* and gene expression of B-linked genes
 ### 7.1 - Measuring *dN/dS*
 To measure the amount of non-synonymous substitutions versus synonymous substitutions, we first extracted the single-copy orthologs among the five species: *K. r. ovogallis*, *K. r. ovatirhusicola*, *K. r. rhusicola*, *K. r. ensigallis*, *K. r. sp.*, and *Floraphis meitanensis*. To measure the differences between A-linked genes and B-linked genes, we treated each B chromosome as an independent sample. So each gene must be single-copy on either A chromosomes or a B chromosome. Then we extracted the CDS of these single-copy orthologs, performed codon-based alignments (https://github.com/lyy005/codon_alignment), and calculated *dN/dS* ratios. We used *Floraphis meitanensis* as the outgroup. The *dN/dS* of each gene copy was measured in comparison to the gene copy of *Floraphis meitanensis* using KaKs_Calculator version 3.0 (https://github.com/Chenglin20170390/KaKs_Calculator-3.0). 
