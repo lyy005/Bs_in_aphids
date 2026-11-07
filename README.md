@@ -50,6 +50,7 @@ Photos of the sumac galls induced by these aphids. Scale bar represents 1 cm.
   - [9.2 - CpGs detected in the genome](#92---cpg-sites-in-the-genome)
   - [9.3 - Exon, intron, and intergenic regions](#93---identifying-exon-intron-and-intergenic-regions)
   - [9.4 - Summarization and visualization of CpGs](#94---summarization-and-visualization-of-cpgs)
+- [10 - Citation]()
 
 ## 1 - Mitochondrial genome assembly and species identification
 ### 1.1 - Quality control
@@ -816,7 +817,7 @@ dunnTest(
 
 
 ## 6 - Improving the B chromosome assembly
-To improve the assembly of B chromosomes, we joined B scaffolds based on four lines of evidence: (1) hifiasm assemblies of B-derived reads, (2) assembly graphs of Verkko, (3) HiC contact maps, and (4) genome syntenies. A joining was made if three out of four lines of evidence supported such connection. 
+To improve the assembly of B chromosomes, we joined B scaffolds based on four lines of evidence: (1) hifiasm assemblies of B-derived reads, (2) assembly graphs of Verkko, (3) HiC contact maps, and (4) genome synteny. A joining was made if three out of four lines of evidence supported such connection. 
 
 ### 6.1 - Joining based on hifiasm assemblies of B-derived reads
 We aligned HiFi reads to the original assembly and extracted HiFi reads that did not map to autosomes or Xs. We assigned these reads as putative B-derived reads. We only assembled these B-derived reads using hifiasm to simplify the assembly process. We aligned the original B scaffolds to the B-derived scaffolds. If the B-derived assembly connected two B scaffolds from the original assembly, we treated this connection as supported by B-derived hifiasm evidence. 
@@ -855,7 +856,7 @@ cat genome.B.graph_aligner.dbg.gaf | awk '($11 > 100000)&&($12 >= 60)' | sort -k
 ### 6.3 - Joining based on HiC contact maps
 Thirdly, if HiC maps suggested contacts between two scaffolds, we treated the joining as supported by HiC signals. The steps we used to make HiC contact maps can be found in the Manual curation section [2.4](#24---manual-curation). 
 
-### 6.4 - Joining based on genome syntenies
+### 6.4 - Joining based on genome synteny
 Lastly, if other complete Bs showed synteny of two fragmented B scaffolds, we treated the joining as supported by synteny. The steps we used to make genome synteny can be found in section [3.2](#32---assigning-x-chromosomes-of-other-species-based-on-the-genome-synteny-with-k-r-ovogallis). 
 
 ## 7 - *dN/dS* and gene expression of B-linked genes
@@ -1286,6 +1287,10 @@ hifi_summary$region = factor(hifi_summary$region, levels = c("intergenic", "intr
 ```
 
 </details>
+
+
+## 10 - Citation
+Li et al. Integrating long-read assemblies resolves the evolutionary trajectory of supernumerary B chromosomes in sumac gall aphids. 
 
 #### Map HiFi reads to hifiasm scaffolds
 Using samtools version 1.21 and minimap2 version 2.28
