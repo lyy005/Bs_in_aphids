@@ -34,7 +34,11 @@ Photos of the sumac galls induced by these aphids. Scale bar represents 1 cm.
   - [5.2 - Estimating intra-chromosomal rearrangement rates](#52---estimating-intra-chromosomal-rearrangement-rates)
   - [5.3 - Estimating inter-chromosomal rearrangement rates](#53---estimating-inter-chromosomal-rearrangement-rates)
   - [5.4 - Visualization of rates](#54---visualization-of-rates)
-- [6 - B chromosome assembly]
+- [6 - Improving B chromosome assembly](#6---improving-the-b-chromosome-assembly)
+  - [6.1 - Joining based on hifiasm](#61---joining-based-on-hifiasm-assemblies-of-b-derived-reads)
+  - [6.2 - Joining based on Verkko](#62---joining-based-on-the-assembly-graphs-of-verkko)
+  - [6.3 - Joining based on HiC contacts](#63---joining-based-on-hic-contact-maps)
+  - [6.4 - Joining based on synteny](#64---joining-based-on-genome-syntenies)
 - [7 - Estimation of *dN/dS* and gene expression](#7---dnds-and-gene-expression-of-b-linked-genes)
   - [7.1 - *dN/dS* ](#71---measuring-dnds)
   - [7.2 - TPM](#72---estimating-tpm)
@@ -43,9 +47,9 @@ Photos of the sumac galls induced by these aphids. Scale bar represents 1 cm.
   - [8.2 - Trans-interactions between chromosomes](#82---trans-interactions)
 - [9 - Methylation of B chromosomes](#9---methylation-in-b-chromosomes)
   - [9.1 - Methylation detection](#91---methylation-detection)
-  - [9.2 - CpGs detected in the genome](92---cpg-sites-in-the-genome)
+  - [9.2 - CpGs detected in the genome](#92---cpg-sites-in-the-genome)
   - [9.3 - Exon, intron, and intergenic regions](#93---identifying-exon-intron-and-intergenic-regions)
-  - [9.4 - Summarization and visualization of CpGs]()
+  - [9.4 - Summarization and visualization of CpGs](94---summarization-and-visualization-of-cpgs)
 
 ## 1 - Mitochondrial genome assembly and species identification
 ### 1.1 - Quality control
